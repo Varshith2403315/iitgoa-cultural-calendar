@@ -383,7 +383,7 @@
         <div class="form-grid">
           <div class="field wide"><label for="eventTitle">Event title</label><input id="eventTitle" type="text" maxlength="140" required></div>
           <div class="field"><label for="eventDate">Date</label><input id="eventDate" type="date" required></div>
-          <div class="field"><label for="eventTime">Start time</label><input id="eventTime" type="time" required></div>
+          <div class="field"><label for="eventTime">Start time (optional)</label><input id="eventTime" type="time"><small class="field-help">Leave blank to show “Time to be announced”.</small></div>
           <div class="field wide"><label for="eventVenue">Venue</label><input id="eventVenue" type="text" maxlength="140" required></div>
           <div class="field wide"><label for="eventCategory">Category</label><select id="eventCategory" required></select></div>
           <div class="field wide"><label for="eventDescription">Description</label><textarea id="eventDescription" maxlength="3000" required></textarea></div>
@@ -451,7 +451,11 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     }
     function parseEventDate(event) { return new Date(`${event.date}T${event.time || "00:00"}:00`); }
+    function eventIsUpcoming(event, now = new Date()) {
+      return event.time ? parseEventDate(event) >= now : event.date >= toDateKey(now);
+    }
     function eventEndTimestamp(date, time) {
+      if (!time) return null;
       return Timestamp.fromDate(new Date(new Date(`${date}T${time}:00`).getTime() + 2 * 60 * 60 * 1000));
     }
     function eventIsCompleted(event) {
@@ -593,7 +597,7 @@
 
     function renderNextUp() {
       const now = new Date();
-      const next = state.filtered.find(event => parseEventDate(event) >= now);
+      const next = state.filtered.find(event => eventIsUpcoming(event, now));
       if (!next) {
         byId("nextTitle").textContent = state.filtered.length ? "No more upcoming events in these results" : "No upcoming events yet";
         byId("nextMeta").textContent = state.filtered.length ? "Try a different category or search" : "New campus gatherings will appear here";
@@ -601,7 +605,12 @@
         const small = document.createElement("small"); small.textContent = "days · -- hours"; byId("countdown").append(small); return;
       }
       byId("nextTitle").textContent = next.title;
-      byId("nextMeta").textContent = `${parseEventDate(next).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · ${next.time} · ${next.venue}`;
+      const nextTime = next.time || "Time to be announced";
+      byId("nextMeta").textContent = `${parseEventDate(next).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · ${nextTime} · ${next.venue}`;
+      if (!next.time) {
+        byId("countdown").replaceChildren(document.createTextNode("TBA"));
+        const small = document.createElement("small"); small.textContent = "time to be announced"; byId("countdown").append(small); return;
+      }
       const delta = Math.max(0, parseEventDate(next) - now);
       const days = Math.floor(delta / 86400000); const hours = Math.floor(delta % 86400000 / 3600000);
       byId("countdown").replaceChildren(document.createTextNode(`${days}d ${hours}h`));
@@ -611,14 +620,14 @@
     function createTicket(event, index) {
       const card = document.createElement("button"); card.type = "button"; card.className = "timeline-card";
       card.style.setProperty("--category", categoryInfo(event.category).color);
-      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${event.time}, ${event.venue}. Open event details.`);
+      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${event.time || "time to be announced"}, ${event.venue}. Open event details.`);
       const date = parseEventDate(event);
       const dateWrap = document.createElement("div"); dateWrap.className = "ticket-date";
       const day = document.createElement("span"); day.className = "ticket-day"; day.textContent = String(date.getDate());
       const month = document.createElement("span"); month.className = "ticket-month"; month.textContent = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }); dateWrap.append(day, month);
       const title = document.createElement("h3"); title.className = "ticket-title"; title.textContent = event.title;
       const venue = document.createElement("p"); venue.className = "ticket-details"; venue.textContent = `⌖ ${event.venue}`;
-      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${event.time}`;
+      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${event.time || "Time to be announced"}`;
       const tag = document.createElement("span"); tag.className = "category-tag"; tag.textContent = categoryInfo(event.category).label;
       card.append(dateWrap, title, venue, time, tag);
       card.addEventListener("click", () => showEventDetails(event.id));
@@ -634,7 +643,7 @@
       events.forEach((event, index) => cards.append(createTicket(event, index)));
       const step = Math.max(500, window.innerHeight * .76);
       runway.style.height = reducedMotion.matches ? "auto" : `${Math.max(1, events.length - 1) * step + window.innerHeight}px`;
-      const nowIndex = events.findIndex(event => parseEventDate(event) >= new Date());
+      const nowIndex = events.findIndex(event => eventIsUpcoming(event));
       state.timelineIndex = nowIndex < 0 ? Math.max(0, events.length - 1) : nowIndex;
       updateTimeline();
     }
@@ -724,10 +733,15 @@
     }
     function downloadCalendarFile() {
       const event = state.events.find(item => item.id === state.selectedEventId); if (!event) return;
-      const start = `${event.date.replaceAll("-", "") }T${(event.time || "00:00").replace(":", "")}00`;
-      const endDate = new Date(parseEventDate(event).getTime() + 2 * 60 * 60 * 1000);
-      const end = `${toDateKey(endDate).replaceAll("-", "")}T${String(endDate.getHours()).padStart(2, "0")}${String(endDate.getMinutes()).padStart(2, "0")}00`;
-      const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//IIT Goa//Cultural Calendar//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", `UID:${crypto.randomUUID()}@iitgoa-cultural-calendar`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${escapeIcs(event.title)}`, `LOCATION:${escapeIcs(event.venue)}`, `DESCRIPTION:${escapeIcs(event.desc)}`, "END:VEVENT", "END:VCALENDAR"];
+      const startDate = event.date.replaceAll("-", "");
+      const endDate = new Date(`${event.date}T00:00:00`);
+      endDate.setDate(endDate.getDate() + 1);
+      const start = event.time ? `:${startDate}T${event.time.replace(":", "")}00` : `;VALUE=DATE:${startDate}`;
+      const timedEnd = new Date(parseEventDate(event).getTime() + 2 * 60 * 60 * 1000);
+      const end = event.time
+        ? `:${toDateKey(timedEnd).replaceAll("-", "")}T${String(timedEnd.getHours()).padStart(2, "0")}${String(timedEnd.getMinutes()).padStart(2, "0")}00`
+        : `;VALUE=DATE:${toDateKey(endDate).replaceAll("-", "")}`;
+      const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//IIT Goa//Cultural Calendar//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", `UID:${crypto.randomUUID()}@iitgoa-cultural-calendar`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`, `DTSTART${start}`, `DTEND${end}`, `SUMMARY:${escapeIcs(event.title)}`, `LOCATION:${escapeIcs(event.venue)}`, `DESCRIPTION:${escapeIcs(event.desc)}`, "END:VEVENT", "END:VCALENDAR"];
       const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
       const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
       anchor.href = url; anchor.download = `${event.date}-${event.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "campus-event"}.ics`;
@@ -757,7 +771,7 @@
         desc: byId("eventDescription").value.trim(), notes: byId("eventNotes").value.trim(),
         eventEnd: eventEndTimestamp(date, time)
       };
-      if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return;
+      if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || (time && !/^\d{2}:\d{2}$/.test(time))) return;
       try {
         if (state.editingEventId) await updateDoc(doc(state.db, "events", state.editingEventId), eventData);
         else await addDoc(collection(state.db, "events"), { ...eventData, photoLinks: [] });
@@ -792,7 +806,7 @@
       if (!calendarActive) {
         if (!state.timelineVisited) {
           state.timelineVisited = true;
-          const nextIndex = state.filtered.findIndex(event => parseEventDate(event) >= new Date());
+          const nextIndex = state.filtered.findIndex(event => eventIsUpcoming(event));
           jumpToTimeline(nextIndex < 0 ? 0 : nextIndex);
         } else updateTimeline();
       }
@@ -879,7 +893,7 @@
     byId("confirmDelete").addEventListener("click", confirmDelete);
     byId("downloadIcs").addEventListener("click", downloadCalendarFile);
     byId("jumpNextButton").addEventListener("click", () => {
-      const next = state.filtered.findIndex(event => parseEventDate(event) >= new Date());
+      const next = state.filtered.findIndex(event => eventIsUpcoming(event));
       jumpToTimeline(next < 0 ? 0 : next);
     });
     byId("timelineStage").addEventListener("keydown", event => {

@@ -21,7 +21,7 @@ Create and edit events through the General Secretary account in the website. Eac
 | --- | --- | --- |
 | `title` | string | `Open Mic Night` |
 | `date` | string (`YYYY-MM-DD`) | `2026-10-24` |
-| `time` | string (`HH:MM`, 24-hour) | `18:30` |
+| `time` | string (`HH:MM`, 24-hour), optional | `18:30` or blank when to be announced |
 | `venue` | string | `Student Activity Centre` |
 | `category` | string | `music` |
 | `desc` | string | `An evening of student performances.` |
@@ -29,7 +29,7 @@ Create and edit events through the General Secretary account in the website. Eac
 | `photoLinks` | array of strings | `https://example.org/album` |
 | `eventEnd` | Firestore timestamp | Two hours after the scheduled start |
 
-Supported categories are `dance`, `music`, `drama`, `art`, `literary`, `fest`, and `other`. The General Secretary can add, edit, and delete events, including their public notes. The Originals Head can append exactly one HTTPS photo album link per update, only after `eventEnd`. For this calendar, an event is considered complete two hours after its scheduled start because event duration is not entered separately. Firestore rules enforce the completion timestamp and prevent Originals from removing links or changing other event fields.
+Supported categories are `dance`, `music`, `drama`, `art`, `literary`, `fest`, and `other`. Leave `time` blank when it has not been announced; the site displays “Time to be announced” and downloads the event as an all-day calendar item. The General Secretary can add, edit, and delete events, including their public notes. The Originals Head can append exactly one HTTPS photo album link per update, only after `eventEnd`. For this calendar, an event is considered complete two hours after its scheduled start because event duration is not entered separately. Firestore rules enforce the completion timestamp and prevent Originals from removing links or changing other event fields.
 
 Events created before `eventEnd` was added need a one-time General Secretary edit and save before their photo-link control becomes available. This writes their completion timestamp. Publish the updated [`firestore.rules`](firestore.rules) to Firebase after deploying this version of the site.
 
