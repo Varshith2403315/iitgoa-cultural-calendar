@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f1f4eb">
+  <meta name="theme-color" content="#edf3f8">
   <meta name="description" content="The IIT Goa Cultural Calendar: find campus performances, workshops, festivals, and more.">
   <title>Cultural Calendar | IIT Goa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,12 +12,12 @@
   <style>
     :root {
       color-scheme: light;
-      --ink: #20342b;
-      --paper: #f1f4eb;
-      --paper-light: #fffdf6;
-      --paper-mid: #e5eadb;
-      --line: #34483b;
-      --muted: #4e6054;
+      --ink: #203449;
+      --paper: #edf3f8;
+      --paper-light: #fffefa;
+      --paper-mid: #dce8f1;
+      --line: #344c63;
+      --muted: #4e6276;
       --accent: #d7a936;
       --accent-deep: #b64231;
       --dance: #e4007c;
@@ -27,7 +27,7 @@
       --literary: #2a6fdb;
       --fest: #c2185b;
       --other: #5f6b7a;
-      --shadow: 3px 3px 0 #20342b;
+      --shadow: 3px 3px 0 #203449;
       --display: "Fraunces", Georgia, serif;
       --body: "DM Sans", "Segoe UI", sans-serif;
     }
@@ -37,7 +37,7 @@
       margin: 0;
       color: var(--ink);
       background-color: var(--paper);
-      background-image: radial-gradient(#58715b18 .7px, transparent .7px), linear-gradient(90deg, #ffffff32 1px, transparent 1px);
+      background-image: radial-gradient(#536e8b20 .7px, transparent .7px), linear-gradient(90deg, #ffffff42 1px, transparent 1px);
       background-size: 11px 11px, 84px 84px;
       font: 16px/1.5 var(--body);
     }
@@ -157,17 +157,17 @@
     .timeline-runway { position: relative; height: 100vh; min-height: 600px; }
     .timeline-stage {
       position: sticky; top: 0; height: 100vh; max-height: 900px; min-height: 560px; overflow: hidden;
-      perspective: 900px; isolation: isolate; background: linear-gradient(145deg, #f5f3e9 0%, #e9efdf 48%, #d5e1d1 100%);
+      perspective: 900px; isolation: isolate; background: linear-gradient(145deg, #f4f5f2 0%, #e3edf5 48%, #c8d9e8 100%);
     }
     .timeline-stage::before {
       content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-      background: repeating-linear-gradient(0deg, transparent 0 62px, #34483b12 63px 64px), linear-gradient(112deg, transparent 0 28%, #fffdf688 28.1% 28.25%, transparent 28.35% 69%, #fffdf670 69.1% 69.25%, transparent 69.35%);
+      background: repeating-linear-gradient(0deg, transparent 0 62px, #344c6314 63px 64px), linear-gradient(112deg, transparent 0 28%, #fffefa88 28.1% 28.25%, transparent 28.35% 69%, #fffefa70 69.1% 69.25%, transparent 69.35%);
     }
     .timeline-stage::after {
       content: ""; position: absolute; z-index: -1; left: -12%; bottom: -37%; width: 124%; height: 64%;
       pointer-events: none; transform: rotateX(64deg); transform-origin: center top;
-      background: repeating-linear-gradient(0deg, transparent 0 37px, #34483b30 38px 39px), repeating-linear-gradient(90deg, transparent 0 74px, #34483b28 75px 76px), linear-gradient(#e7ebdc, #ccd9c7);
-      border-top: 1px solid #536a5744;
+      background: repeating-linear-gradient(0deg, transparent 0 37px, #344c6330 38px 39px), repeating-linear-gradient(90deg, transparent 0 74px, #344c6328 75px 76px), linear-gradient(#e1ebf2, #c0d2e1);
+      border-top: 1px solid #536d8544;
     }
     .parallax-layer { position: absolute; z-index: 0; pointer-events: none; border: 1px solid #ffffffc9; transform-style: preserve-3d; }
     .parallax-one {
@@ -176,7 +176,7 @@
     }
     .parallax-two {
       right: -7%; bottom: 9%; width: 43vw; height: 38vh; clip-path: polygon(20% 0, 100% 19%, 78% 100%, 0 72%);
-      background: linear-gradient(145deg, #dce9c9, #b9cfaa); box-shadow: -18px 20px 0 #667f4b44;
+      background: linear-gradient(145deg, #dae8f3, #b8cedf); box-shadow: -18px 20px 0 #536f8a44;
     }
     .parallax-three {
       top: 24%; right: 16%; width: 15vw; height: 20vh; clip-path: polygon(50% 0, 100% 28%, 100% 76%, 50% 100%, 0 76%, 0 28%);
@@ -200,7 +200,7 @@
     .category-tag { display: inline-block; margin-top: 11px; padding: 3px 8px; border: 1.5px solid var(--ink); border-radius: 2px; background: color-mix(in srgb, var(--category) 17%, #fffdf6); color: var(--ink); font-size: .74rem; font-weight: 700; }
     .timeline-card.is-front { z-index: 4; }
     .timeline-runway.reduced { height: auto !important; min-height: 0; padding: 4px 0; }
-    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #f0f2f3; }
+    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #e3edf5; }
     .timeline-runway.reduced .timeline-stage::before, .timeline-runway.reduced .timeline-stage::after { display: none; }
     .timeline-runway.reduced .timeline-spine, .timeline-runway.reduced .month-marker, .timeline-runway.reduced .timeline-progress { display: none; }
     .timeline-runway.reduced .timeline-card { position: relative; top: auto; left: auto; width: min(650px, 100%); min-height: 0; margin: 12px auto; opacity: 1 !important; transform: none !important; will-change: auto; }
