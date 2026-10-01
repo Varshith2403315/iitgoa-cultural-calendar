@@ -1,1692 +1,839 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IIT Goa Cultural Calendar</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --accent: #ec4899;
-            --accent-light: #f472b6;
-            --accent-dark: #be185d;
-            
-            --bg: #ffffff;
-            --bg-secondary: #f9fafb;
-            --bg-tertiary: #f3f4f6;
-            --text: #111827;
-            --text-secondary: #6b7280;
-            --text-tertiary: #9ca3af;
-            --border: #e5e7eb;
-            
-            --dance: #e4007c;
-            --music: #7b3fe4;
-            --drama: #e07a00;
-            --art: #00a79d;
-            --literary: #2a6fdb;
-            --fest: #c2185b;
-            --other: #5f6b7a;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #111827;
-                --bg-secondary: #1f2937;
-                --bg-tertiary: #374151;
-                --text: #f3f4f6;
-                --text-secondary: #d1d5db;
-                --text-tertiary: #9ca3af;
-                --border: #4b5563;
-            }
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html, body {
-            height: 100%;
-        }
-        
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            transition: background-color 0.3s, color 0.3s;
-            line-height: 1.6;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-weight: 700;
-        }
-        
-        /* Header */
-        header {
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-        
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        
-        .role-badge {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.375rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: capitalize;
-            display: none;
-        }
-        
-        .role-badge.visible {
-            display: inline-block;
-        }
-        
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            font-family: 'DM Sans', sans-serif;
-        }
-        
-        button:hover {
-            background-color: var(--primary-dark);
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-        
-        button:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
-        
-        button.secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        
-        button.secondary:hover {
-            background-color: var(--border);
-        }
-        
-        button.danger {
-            background-color: #dc2626;
-        }
-        
-        button.danger:hover {
-            background-color: #b91c1c;
-        }
-        
-        #addEventBtn {
-            display: none;
-        }
-        
-        #addEventBtn.visible {
-            display: inline-block;
-        }
-        
-        /* Main Container */
-        main {
-            padding: 2rem 1.5rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--border);
-        }
-        
-        .tab-btn {
-            background: none;
-            color: var(--text-secondary);
-            border: none;
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            position: relative;
-            transition: color 0.2s;
-        }
-        
-        .tab-btn:hover {
-            color: var(--text);
-        }
-        
-        .tab-btn.active {
-            color: var(--primary);
-        }
-        
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: var(--primary);
-        }
-        
-        /* Filters */
-        .filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        input[type="text"], select {
-            width: 100%;
-            padding: 0.625rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-        }
-        
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        
-        /* Calendar View */
-        .calendar-container {
-            display: none;
-        }
-        
-        .calendar-container.active {
-            display: block;
-        }
-        
-        .calendar-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        
-        .calendar-month {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 1rem;
-        }
-        
-        .calendar-header {
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            padding: 1rem 0.5rem;
-        }
-        
-        .calendar-day {
-            aspect-ratio: 1;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            overflow-y: auto;
-            min-height: 80px;
-        }
-        
-        .calendar-day:hover {
-            border-color: var(--primary);
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
-        }
-        
-        .calendar-day.other-month {
-            opacity: 0.4;
-            cursor: default;
-        }
-        
-        .calendar-day.today {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .calendar-day-number {
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-        
-        .event-chip {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .event-chip:hover {
-            transform: scale(1.05);
-        }
-        
-        .event-chip.dance { background-color: var(--dance); }
-        .event-chip.music { background-color: var(--music); }
-        .event-chip.drama { background-color: var(--drama); }
-        .event-chip.art { background-color: var(--art); }
-        .event-chip.literary { background-color: var(--literary); }
-        .event-chip.fest { background-color: var(--fest); }
-        .event-chip.other { background-color: var(--other); }
-        
-        /* Timeline View */
-        .timeline-container {
-            display: none;
-            perspective: 1000px;
-        }
-        
-        .timeline-container.active {
-            display: block;
-        }
-        
-        .timeline-stage {
-            height: 900px;
-            position: relative;
-            overflow-y: scroll;
-            scroll-behavior: smooth;
-        }
-        
-        .timeline-track {
-            position: relative;
-            padding: 200px 0;
-        }
-        
-        .event-card {
-            position: absolute;
-            left: 5%;
-            right: 5%;
-            width: 90%;
-            max-width: 600px;
-            padding: 2rem;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease-out;
-            transform: translate3d(0, 0, 0) rotateY(0deg);
-            opacity: 0.5;
-        }
-        
-        .event-card:nth-child(even) {
-            left: auto;
-            right: 5%;
-            transform-origin: right center;
-        }
-        
-        .event-card:nth-child(odd) {
-            left: 5%;
-            transform-origin: left center;
-        }
-        
-        .event-card:hover {
-            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
-        }
-        
-        .event-card:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
-        
-        .event-day-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            line-height: 1;
-        }
-        
-        .event-month {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .event-card-title {
-            font-size: 1.5rem;
-            margin: 1rem 0 0.5rem;
-        }
-        
-        .event-card-venue {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-        
-        .event-card-tag {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-        
-        .event-card-tag.dance { background-color: var(--dance); color: white; }
-        .event-card-tag.music { background-color: var(--music); color: white; }
-        .event-card-tag.drama { background-color: var(--drama); color: white; }
-        .event-card-tag.art { background-color: var(--art); color: white; }
-        .event-card-tag.literary { background-color: var(--literary); color: white; }
-        .event-card-tag.fest { background-color: var(--fest); color: white; }
-        .event-card-tag.other { background-color: var(--other); color: white; }
-        
-        /* Event Details Dialog */
-        dialog {
-            border: none;
-            border-radius: 1rem;
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 0;
-            max-width: 90%;
-            width: 600px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        dialog::backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        .dialog-header {
-            padding: 2rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-        }
-        
-        .dialog-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .dialog-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dialog-content {
-            padding: 2rem;
-            overflow-y: auto;
-            max-height: 70vh;
-        }
-        
-        .dialog-footer {
-            padding: 2rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-        
-        .event-detail-item {
-            margin-bottom: 1.5rem;
-        }
-        
-        .event-detail-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-        
-        .event-detail-value {
-            font-size: 1rem;
-        }
-        
-        .photo-links-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .photo-link {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            width: fit-content;
-        }
-        
-        .photo-link:hover {
-            background-color: var(--primary-dark);
-            transform: translateX(4px);
-        }
-        
-        .photo-link:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
-        
-        /* Add/Edit Event Modal */
-        .modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .form-group label {
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            padding: 0.625rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        
-        .tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .tag-input {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .photo-links-input {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .photo-links-input input {
-            flex: 1;
-        }
-        
-        .photo-links-list-edit {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .photo-link-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            background-color: var(--bg-tertiary);
-            border-radius: 0.5rem;
-        }
-        
-        .photo-link-item button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1.5rem;
-        }
-        
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .empty-state-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .empty-state-text {
-            color: var(--text-secondary);
-        }
-        
-        /* Error State */
-        .error-message {
-            background-color: #fee2e2;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #dc2626;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .error-message {
-                background-color: #7f1d1d;
-                color: #fecaca;
-            }
-        }
-        
-        /* Success State */
-        .success-message {
-            background-color: #dcfce7;
-            color: #166534;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #22c55e;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .success-message {
-                background-color: #164e63;
-                color: #86efac;
-            }
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-1rem);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Loading State */
-        .loading {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid var(--primary);
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .header-left, .header-right {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            main {
-                padding: 1rem;
-            }
-            
-            .tabs {
-                justify-content: center;
-            }
-            
-            .filters {
-                flex-direction: column;
-            }
-            
-            .calendar-grid {
-                min-width: 100%;
-            }
-            
-            .event-card {
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-            
-            dialog {
-                width: 95%;
-                max-width: 95%;
-            }
-            
-            .timeline-stage {
-                height: 600px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .header-title {
-                font-size: 1.25rem;
-            }
-            
-            .dialog-header, .dialog-content, .dialog-footer {
-                padding: 1rem;
-            }
-            
-            .event-card-title {
-                font-size: 1.25rem;
-            }
-            
-            .event-day-number {
-                font-size: 2rem;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2efff">
+  <meta name="description" content="The IIT Goa Cultural Calendar: find campus performances, workshops, festivals, and more.">
+  <title>Cultural Calendar | IIT Goa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1340;
+      --paper: #f2efff;
+      --paper-light: #fff;
+      --paper-mid: #e5defb;
+      --line: #291d57;
+      --muted: #51496e;
+      --accent: #e4007c;
+      --accent-deep: #b00060;
+      --dance: #e4007c;
+      --music: #7b3fe4;
+      --drama: #e07a00;
+      --art: #00a79d;
+      --literary: #2a6fdb;
+      --fest: #c2185b;
+      --other: #5f6b7a;
+      --shadow: 5px 5px 0 var(--ink);
+      --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+      --body: "DM Sans", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#1b13401a .8px, transparent .8px);
+      background-size: 13px 13px;
+      font: 16px/1.5 var(--body);
+    }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    button:disabled { opacity: .58; cursor: not-allowed; transform: none; box-shadow: 3px 3px 0 var(--ink); }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid #006a9c;
+      outline-offset: 3px;
+    }
+    .shell { width: min(1240px, calc(100% - 40px)); margin-inline: auto; }
+    .masthead {
+      border-bottom: 2px solid var(--line);
+      background: var(--paper);
+      padding: 24px 0 20px;
+    }
+    .masthead-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand-lockup { display: flex; align-items: center; gap: 15px; min-width: 0; }
+    .brand-mark {
+      width: 54px; height: 54px; flex: none; display: grid; place-items: center;
+      border: 2px solid var(--ink); border-radius: 15px; background: var(--accent-deep); color: white;
+      box-shadow: 3px 3px 0 var(--ink); font: 800 1.3rem var(--display); transform: rotate(-4deg);
+    }
+    .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+    h1 { margin: 0; font: 800 clamp(1.7rem, 4vw, 2.65rem)/.98 var(--display); }
+    .masthead-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; flex-wrap: wrap; }
+    .role-badge { display: none; padding: 7px 10px; border: 2px solid var(--ink); border-radius: 999px; background: #fff; font-size: .75rem; font-weight: 700; }
+    .role-badge.visible { display: inline-flex; }
+    .button {
+      min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 14px; border: 2px solid var(--ink); border-radius: 10px; background: var(--accent-deep);
+      color: #fff; box-shadow: 3px 3px 0 var(--ink); font-weight: 700; text-decoration: none; cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+    }
+    .button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+    .button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .button.secondary { background: var(--paper-light); color: var(--ink); }
+    .button.quiet { box-shadow: none; background: transparent; }
+    .button.danger { background: #9e1c30; }
+    .button.small { min-height: 36px; padding: 6px 11px; font-size: .86rem; }
+    .button[hidden], [hidden] { display: none !important; }
+    main { padding-block: 23px 72px; }
+    .next-strip {
+      display: grid; grid-template-columns: minmax(105px, .65fr) 2fr auto; align-items: center; gap: 16px;
+      margin-bottom: 25px; padding: 17px 20px; border: 2px solid var(--ink); border-radius: 14px;
+      background: var(--paper-light); box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .next-strip::after { content: ""; position: absolute; right: 9%; top: -30px; width: 90px; aspect-ratio: 1; border: 2px solid var(--ink); border-radius: 50%; background: #f5b5da; z-index: 0; }
+    .next-kicker { position: relative; z-index: 1; font-weight: 800; color: var(--accent); text-transform: uppercase; font-size: .78rem; letter-spacing: .06em; }
+    .next-info { position: relative; z-index: 1; min-width: 0; }
+    .next-title { display: block; overflow: hidden; font: 700 1.2rem/1.2 var(--display); text-overflow: ellipsis; white-space: nowrap; }
+    .next-meta { color: var(--muted); font-size: .88rem; }
+    .countdown { position: relative; z-index: 1; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .countdown small { display: block; color: var(--muted); font-size: .72rem; font-weight: 600; }
+    .toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) auto; gap: 14px; align-items: end; margin-bottom: 20px; }
+    .search-wrap label, .field label { display: block; margin-bottom: 6px; font-size: .78rem; font-weight: 700; }
+    .input, .field input, .field select, .field textarea {
+      width: 100%; min-height: 44px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 9px;
+      color: var(--ink); background: #fff;
+    }
+    .field textarea { min-height: 105px; resize: vertical; }
+    .input::placeholder, .field input::placeholder { color: #625b78; }
+    .legend-wrap { margin-bottom: 20px; }
+    .legend-title { margin: 0 0 9px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; }
+    .legend-button {
+      min-height: 34px; display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px;
+      border: 1.5px solid var(--line); border-radius: 999px; background: #fff; font-size: .8rem; font-weight: 700; cursor: pointer;
+    }
+    .legend-button[aria-pressed="true"] { box-shadow: 2px 2px 0 var(--ink); transform: translate(-1px, -1px); }
+    .swatch, .event-dot { width: 11px; height: 11px; flex: none; border-radius: 50%; background: var(--category); border: 1px solid #241a45; }
+    .tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; }
+    .tab-button { padding: 10px 16px; border: 2px solid transparent; border-bottom: 0; border-radius: 9px 9px 0 0; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; }
+    .tab-button[aria-selected="true"] { border-color: var(--ink); background: var(--paper-light); color: var(--ink); box-shadow: 3px 0 var(--ink); }
+    .view[hidden] { display: none; }
+    .calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 4px 0 13px; }
+    .calendar-heading h2 { margin: 0; font: 700 1.55rem/1.1 var(--display); }
+    .month-actions { display: flex; gap: 8px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; }
+    .weekday { padding: 5px; text-align: center; color: var(--muted); font-size: .76rem; font-weight: 700; }
+    .calendar-day {
+      min-width: 0; min-height: 122px; padding: 7px; border: 1.5px solid #746a93; border-radius: 10px;
+      background: #fff; overflow: hidden; transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .calendar-day:hover { transform: translateY(-2px); box-shadow: 2px 3px 0 var(--ink); }
+    .calendar-day.is-outside { background: #ebe7f7; color: #756d8b; }
+    .calendar-day.is-today { outline: 3px solid var(--accent); outline-offset: -3px; }
+    .day-number {
+      width: 31px; height: 31px; display: grid; place-items: center; margin-bottom: 4px;
+      border: 0; border-radius: 50%; background: transparent; color: inherit; font-weight: 700; cursor: pointer;
+    }
+    .is-today .day-number { background: var(--accent-deep); color: #fff; }
+    .day-chip {
+      width: 100%; display: block; margin-top: 4px; padding: 3px 5px; border: 0; border-left: 4px solid var(--category);
+      border-radius: 4px; background: color-mix(in srgb, var(--category) 13%, white); color: var(--ink);
+      overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; font-size: .69rem; font-weight: 700; cursor: pointer;
+    }
+    .day-chip:hover { transform: translateX(2px); }
+    .more-chip { display: block; margin-top: 3px; padding: 1px 4px; color: var(--muted); font-size: .7rem; font-weight: 700; cursor: pointer; }
+    .event-dots { display: none; align-items: center; gap: 4px; padding: 3px 4px; }
+    .selected-day-events { margin-top: 20px; }
+    .selected-day-events h3 { margin: 0 0 10px; font: 700 1.2rem var(--display); }
+    .day-event-list { display: grid; gap: 9px; }
+    .day-event-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; border: 1.5px solid var(--ink); border-radius: 10px; background: #fff; text-align: left; cursor: pointer; }
+    .day-event-row:hover { box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+    .day-event-row strong { display: block; }
+    .day-event-row small { color: var(--muted); }
+    .empty-inline { padding: 16px; border: 1.5px dashed #817996; border-radius: 10px; color: var(--muted); }
+    .status-message { margin: 14px 0; padding: 12px 14px; border: 2px solid #8f1832; border-radius: 9px; background: #ffe7ed; color: #761329; font-weight: 600; }
+    .status-message:empty { display: none; }
+    .status-message[data-kind="loading"] { border-color: #766a99; background: #fff; color: var(--muted); }
+    .timeline-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .timeline-hint { margin: 0; color: var(--muted); font-size: .86rem; }
+    .timeline-runway { position: relative; height: 100vh; min-height: 600px; }
+    .timeline-stage {
+      position: sticky; top: 0; height: 100vh; max-height: 900px; min-height: 560px; overflow: hidden;
+      perspective: 900px; isolation: isolate; background: #dfd7fa;
+    }
+    .parallax-layer { position: absolute; z-index: -1; pointer-events: none; border: 2px solid #1b134012; }
+    .parallax-one { top: 7%; left: -4%; width: 37vw; height: 28vh; border-radius: 50% 44% 48% 43%; background: #f4b9da; }
+    .parallax-two { right: -3%; bottom: 7%; width: 42vw; height: 32vh; border-radius: 48% 40% 45% 50%; background: #a7ded7; }
+    .parallax-three { top: 17%; right: 19%; width: 90px; height: 90px; border-radius: 50%; background: #f6d58c; }
+    .timeline-progress { position: absolute; z-index: 5; top: 0; left: 0; width: 100%; height: 5px; background: #1b134025; }
+    .timeline-progress span { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+    .timeline-spine { position: absolute; top: 12%; bottom: 12%; left: 50%; width: 2px; background: #1b134077; }
+      .month-marker { position: absolute; top: 12%; left: 50%; z-index: 2; padding: 4px 8px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--paper); font-size: .7rem; font-weight: 700; transform: translate(-50%, -50%); }
+    .timeline-card {
+      position: absolute; top: 50%; left: 50%; width: min(440px, 42vw); min-height: 250px; padding: 22px;
+      border: 2px solid var(--ink); border-radius: 14px; background: #fff; box-shadow: 6px 6px 0 var(--category, var(--accent));
+      transform-style: preserve-3d; cursor: pointer; will-change: transform, opacity;
+    }
+    .timeline-card::before { content: "CAMPUS CULTURE / ADMIT ONE"; display: block; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1.5px dashed #6a607f; color: var(--muted); font-size: .64rem; font-weight: 700; letter-spacing: .1em; }
+    .ticket-date { display: flex; align-items: baseline; gap: 9px; color: var(--category, var(--accent)); }
+    .ticket-day { font: 800 3.4rem/.9 var(--display); }
+    .ticket-month { font-size: .82rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .ticket-title { margin: 13px 0 7px; font: 700 1.55rem/1.1 var(--display); overflow-wrap: anywhere; }
+    .ticket-details { margin: 4px 0; color: var(--muted); font-size: .9rem; }
+    .category-tag { display: inline-block; margin-top: 11px; padding: 4px 9px; border: 2px solid var(--category); border-radius: 999px; background: color-mix(in srgb, var(--category) 16%, white); color: var(--ink); font-size: .74rem; font-weight: 700; }
+    .timeline-card.is-front { z-index: 4; }
+    .timeline-runway.reduced { height: auto !important; min-height: 0; padding: 4px 0; }
+    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #dfd7fa; }
+    .timeline-runway.reduced .timeline-spine, .timeline-runway.reduced .month-marker, .timeline-runway.reduced .timeline-progress { display: none; }
+    .timeline-runway.reduced .timeline-card { position: relative; top: auto; left: auto; width: min(650px, 100%); min-height: 0; margin: 12px auto; opacity: 1 !important; transform: none !important; will-change: auto; }
+    .timeline-runway.reduced .parallax-layer { display: none; }
+    .footer-note { margin-top: 22px; color: var(--muted); font-size: .78rem; }
+    dialog {
+      width: min(620px, calc(100% - 28px)); max-height: min(88vh, 850px); padding: 0; overflow: auto;
+      border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-light); color: var(--ink); box-shadow: 8px 8px 0 #1b134066;
+      animation: dialog-in .18s ease-out;
+    }
+    dialog::backdrop { background: #1b1340a6; backdrop-filter: blur(2px); }
+    @keyframes dialog-in { from { opacity: 0; transform: scale(.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .dialog-band { height: 17px; background: var(--category, var(--accent)); border-bottom: 2px solid var(--ink); }
+    .dialog-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 18px 20px 10px; }
+    .dialog-header h2 { margin: 0; font: 700 1.7rem/1.05 var(--display); overflow-wrap: anywhere; }
+    .dialog-content { padding: 10px 20px 20px; }
+    .dialog-footer { display: flex; justify-content: flex-end; gap: 9px; flex-wrap: wrap; padding: 14px 20px; border-top: 1.5px solid #b8b0ca; }
+    .icon-button { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 9px; background: #fff; font-size: 1.25rem; cursor: pointer; }
+    .detail-tag { margin: 0 0 12px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-field { min-width: 0; padding: 10px; border: 1.5px solid #b8b0ca; border-radius: 9px; }
+    .detail-field.wide { grid-column: 1 / -1; }
+    .detail-label { margin: 0 0 3px; color: var(--muted); font-size: .69rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    .detail-value { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .photo-list { display: grid; gap: 7px; }
+    .photo-list a { width: fit-content; max-width: 100%; color: #164d9c; font-weight: 700; overflow-wrap: anywhere; }
+    .section-rule { margin: 16px 0 12px; border: 0; border-top: 1.5px dashed #b8b0ca; }
+    .photo-form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 9px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .field.wide { grid-column: 1 / -1; }
+    .dialog-form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+    .field-help { display: block; margin-top: 4px; color: var(--muted); font-size: .74rem; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 28px, 620px); }
+      .masthead-inner { align-items: flex-start; flex-direction: column; gap: 17px; }
+      .masthead-actions { width: 100%; justify-content: flex-start; }
+      .toolbar { grid-template-columns: 1fr; }
+      .next-strip { grid-template-columns: 1fr auto; gap: 5px 12px; padding: 14px; }
+      .next-kicker { grid-column: 1 / -1; }
+      .next-title { font-size: 1.03rem; }
+      .next-strip::after { right: 15%; }
+      .calendar-grid { gap: 4px; }
+      .calendar-day { min-height: 74px; padding: 3px; }
+      .weekday { padding: 3px 0; font-size: .68rem; }
+      .day-number { width: 28px; height: 28px; margin: 0 auto; }
+      .day-chip, .more-chip { display: none; }
+      .event-dots { display: flex; justify-content: center; flex-wrap: wrap; }
+      .event-dot { width: 8px; height: 8px; }
+      .timeline-card { width: min(430px, 76vw); }
+      .timeline-spine { left: 50%; }
+    }
+    @media (max-width: 430px) {
+      .shell { width: calc(100% - 22px); }
+      .brand-mark { width: 46px; height: 46px; }
+      .masthead-actions { gap: 7px; }
+      .masthead-actions .button { padding-inline: 10px; font-size: .84rem; }
+      .role-badge { font-size: .68rem; }
+      .calendar-heading h2 { font-size: 1.28rem; }
+      .calendar-day { min-height: 60px; }
+      .calendar-grid { gap: 3px; }
+      .month-actions { gap: 5px; }
+      .month-actions .button { padding-inline: 8px; }
+      .detail-grid, .form-grid { grid-template-columns: 1fr; }
+      .detail-field.wide, .field.wide { grid-column: auto; }
+      .dialog-header, .dialog-content, .dialog-footer { padding-inline: 15px; }
+      .photo-form { grid-template-columns: 1fr; }
+      .timeline-runway { min-height: 550px; }
+      .timeline-stage { min-height: 550px; }
+      .timeline-card { width: 82vw; padding: 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="header-left">
-            <h1 class="header-title">IIT Goa Cultural Calendar</h1>
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">GOA</div>
+        <div><p class="eyebrow">Indian Institute of Technology Goa</p><h1>Cultural Calendar</h1></div>
+      </div>
+      <div class="masthead-actions">
+        <span class="role-badge" id="roleBadge" aria-live="polite"></span>
+        <button class="button" id="loginButton" type="button">Organiser login</button>
+        <button class="button secondary" id="logoutButton" type="button" hidden>Log out</button>
+        <button class="button" id="addEventButton" type="button" hidden>＋ Add event</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="next-strip" aria-label="Next upcoming event">
+      <span class="next-kicker">Next up</span>
+      <div class="next-info"><strong class="next-title" id="nextTitle">Looking for the next campus gathering…</strong><span class="next-meta" id="nextMeta">Events will appear here</span></div>
+      <div class="countdown" id="countdown" aria-live="off">--<small>days · -- hours</small></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="search-wrap"><label for="searchInput">Search events</label><input class="input" id="searchInput" type="search" placeholder="Title, venue, description or notes" autocomplete="off"></div>
+      <div class="search-wrap"><label for="categorySelect">Category</label><select class="input" id="categorySelect"><option value="">All categories</option></select></div>
+    </div>
+    <div class="legend-wrap"><p class="legend-title">Browse by category</p><div class="legend" id="categoryLegend" aria-label="Category filters"></div></div>
+
+    <div id="statusMessage" class="status-message" role="status" aria-live="polite" data-kind="loading">Loading campus events…</div>
+    <p id="emptyResults" class="empty-inline" role="status" hidden></p>
+    <div class="tabs" role="tablist" aria-label="Calendar views">
+      <button class="tab-button" id="calendarTab" type="button" role="tab" aria-selected="true" aria-controls="calendarView">Monthly calendar</button>
+      <button class="tab-button" id="timelineTab" type="button" role="tab" aria-selected="false" aria-controls="timelineView">3D timeline</button>
+    </div>
+
+    <section class="view" id="calendarView" role="tabpanel" aria-labelledby="calendarTab">
+      <div class="calendar-heading">
+        <h2 id="monthHeading"></h2>
+        <div class="month-actions">
+          <button class="button secondary small" id="previousMonth" type="button" aria-label="Previous month">← Prev</button>
+          <button class="button secondary small" id="todayButton" type="button">Today</button>
+          <button class="button secondary small" id="nextMonth" type="button" aria-label="Next month">Next →</button>
         </div>
-        <div class="header-right">
-            <button id="loginBtn">Login</button>
-            <button id="logoutBtn" style="display: none;">Logout</button>
-            <span class="role-badge" id="roleBadge"></span>
-            <button id="addEventBtn" class="secondary">+ Add Event</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid" aria-label="Monthly event calendar"></div>
+      <section class="selected-day-events" id="selectedDayEvents" aria-live="polite">
+        <h3 id="selectedDayHeading">Events on this day</h3>
+        <div class="day-event-list" id="dayEventList"></div>
+      </section>
+    </section>
+
+    <section class="view" id="timelineView" role="tabpanel" aria-labelledby="timelineTab" hidden>
+      <div class="timeline-toolbar">
+        <p class="timeline-hint" id="timelineHint">Scroll to travel through the semester. Select a ticket for details.</p>
+        <button class="button small" id="jumpNextButton" type="button">↓ Jump to next event</button>
+      </div>
+      <div class="timeline-runway" id="timelineRunway">
+        <div class="timeline-stage" id="timelineStage" aria-label="Scrollable cultural event timeline">
+          <div class="timeline-progress" aria-hidden="true"><span id="timelineProgress"></span></div>
+          <div class="parallax-layer parallax-one" aria-hidden="true"></div>
+          <div class="parallax-layer parallax-two" aria-hidden="true"></div>
+          <div class="parallax-layer parallax-three" aria-hidden="true"></div>
+          <div class="timeline-spine" aria-hidden="true"></div>
+            <div id="monthMarkers" class="month-marker" aria-hidden="true"></div>
+          <div id="timelineCards"></div>
         </div>
-    </header>
+      </div>
+    </section>
+    <p class="footer-note">A shared calendar for the IIT Goa campus community.</p>
+  </main>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Filters -->
-        <div class="filters">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search events...">
-            </div>
-            <select id="councilFilter">
-                <option value="">All Councils</option>
-                <option value="Art Council">Art Council</option>
-                <option value="Media Council">Media Council</option>
-                <option value="Lit Council">Lit Council</option>
-                <option value="General">General Events</option>
-            </select>
-            <select id="clubFilter">
-                <option value="">All Clubs</option>
-            </select>
+  <dialog id="eventDialog" aria-labelledby="detailTitle">
+    <div class="dialog-band" id="detailBand"></div>
+    <div class="dialog-header"><div><span class="category-tag detail-tag" id="detailCategory"></span><h2 id="detailTitle"></h2></div><button class="icon-button" type="button" data-close="eventDialog" aria-label="Close event details">×</button></div>
+    <div class="dialog-content">
+      <div class="detail-grid">
+        <div class="detail-field"><p class="detail-label">Date</p><p class="detail-value" id="detailDate"></p></div>
+        <div class="detail-field"><p class="detail-label">Time</p><p class="detail-value" id="detailTime"></p></div>
+        <div class="detail-field wide"><p class="detail-label">Venue</p><p class="detail-value" id="detailVenue"></p></div>
+        <div class="detail-field wide"><p class="detail-label">About</p><p class="detail-value" id="detailDescription"></p></div>
+        <div class="detail-field wide" id="notesField"><p class="detail-label">Notes</p><p class="detail-value" id="detailNotes"></p></div>
+        <div class="detail-field wide" id="photoField"><p class="detail-label">Photo albums</p><div class="photo-list" id="photoList"></div></div>
+      </div>
+      <div id="originalsPhotoTools" hidden>
+        <hr class="section-rule">
+        <form class="photo-form" id="photoLinkForm">
+          <div class="field"><label for="photoUrl">Add a photo album link</label><input id="photoUrl" type="url" placeholder="https://…" pattern="https://.*" required><small class="field-help">Use a secure https:// link.</small></div>
+          <button class="button small" type="submit">Add link</button>
+        </form>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="button secondary small" id="downloadIcs" type="button">↓ Add to calendar</button>
+      <button class="button secondary small" id="editEvent" type="button" hidden>Edit</button>
+      <button class="button danger small" id="deleteEvent" type="button" hidden>Delete</button>
+      <button class="button secondary small" type="button" data-close="eventDialog">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="eventFormDialog" aria-labelledby="formHeading">
+    <div class="dialog-header"><h2 id="formHeading">Add an event</h2><button class="icon-button" type="button" data-close="eventFormDialog" aria-label="Close event form">×</button></div>
+    <div class="dialog-content">
+      <form id="eventForm">
+        <div class="form-grid">
+          <div class="field wide"><label for="eventTitle">Event title</label><input id="eventTitle" type="text" maxlength="140" required></div>
+          <div class="field"><label for="eventDate">Date</label><input id="eventDate" type="date" required></div>
+          <div class="field"><label for="eventTime">Start time</label><input id="eventTime" type="time" required></div>
+          <div class="field wide"><label for="eventVenue">Venue</label><input id="eventVenue" type="text" maxlength="140" required></div>
+          <div class="field wide"><label for="eventCategory">Category</label><select id="eventCategory" required></select></div>
+          <div class="field wide"><label for="eventDescription">Description</label><textarea id="eventDescription" maxlength="3000" required></textarea></div>
+          <div class="field wide" id="notesInputField" hidden><label for="eventNotes">Public notes</label><textarea id="eventNotes" maxlength="2000"></textarea><small class="field-help">Visible to everyone viewing the calendar.</small></div>
         </div>
+        <div class="dialog-form-actions"><button class="button secondary" type="button" data-close="eventFormDialog">Cancel</button><button class="button" type="submit">Save event</button></div>
+      </form>
+    </div>
+  </dialog>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="calendar">Calendar</button>
-            <button class="tab-btn" data-tab="timeline">Timeline</button>
-        </div>
+  <dialog id="loginDialog" aria-labelledby="loginHeading">
+    <div class="dialog-header"><h2 id="loginHeading">Organiser login</h2><button class="icon-button" type="button" data-close="loginDialog" aria-label="Close login form">×</button></div>
+    <div class="dialog-content">
+      <form id="loginForm" class="form-grid">
+        <div class="field wide"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+        <div class="field wide"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+        <div id="loginError" class="field wide" role="alert"></div>
+        <div class="field wide dialog-form-actions"><button class="button secondary" type="button" data-close="loginDialog">Cancel</button><button class="button" type="submit">Sign in</button></div>
+      </form>
+    </div>
+  </dialog>
 
-        <!-- Calendar View -->
-        <div class="calendar-container active" id="calendarContainer">
-            <div class="calendar-nav">
-                <button class="secondary" id="prevMonthBtn">← Prev</button>
-                <h2 class="calendar-month" id="calendarMonth"></h2>
-                <button class="secondary" id="nextMonthBtn">Next →</button>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
+  <dialog id="deleteDialog" aria-labelledby="deleteHeading">
+    <div class="dialog-header"><h2 id="deleteHeading">Delete this event?</h2><button class="icon-button" type="button" data-close="deleteDialog" aria-label="Close delete confirmation">×</button></div>
+    <div class="dialog-content"><p id="deletePrompt">This event will be removed from the calendar.</p></div>
+    <div class="dialog-footer"><button class="button secondary" type="button" data-close="deleteDialog">Keep event</button><button class="button danger" id="confirmDelete" type="button">Delete event</button></div>
+  </dialog>
 
-        <!-- Timeline View -->
-        <div class="timeline-container" id="timelineContainer">
-            <div class="timeline-stage" id="timelineStage">
-                <div class="timeline-track" id="timelineTrack"></div>
-            </div>
-        </div>
+  <script type="module">
+    // Replace these values with the Firebase web app configuration for this project.
+    const firebaseConfig = {
+      apiKey: "AIzaSyC86CA_FJF0Lc5WHBF6WNyOrACVfgUMdjk",
+      authDomain: "iit-goa-cultural-calendar.firebaseapp.com",
+      projectId: "iit-goa-cultural-calendar",
+      appId: "1:598654025498:web:2fa7917eea397aa187b6a3"
+    };
 
-        <!-- Empty State -->
-        <div class="empty-state" id="emptyState" style="display: none;">
-            <div class="empty-state-icon">📭</div>
-            <h3 class="empty-state-title">No events match</h3>
-            <p class="empty-state-text">Try clearing the search or category filters.</p>
-        </div>
-    </main>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    <!-- Event Details Dialog -->
-    <dialog id="eventDialog">
-        <div class="dialog-header">
-            <h2 class="dialog-title" id="eventDialogTitle"></h2>
-            <button class="dialog-close" aria-label="Close" onclick="document.getElementById('eventDialog').close()">✕</button>
-        </div>
-        <div class="dialog-content">
-            <div class="event-detail-item">
-                <div class="event-detail-label">Category</div>
-                <span class="event-card-tag" id="eventCategory"></span>
-            </div>
-            <div class="event-detail-item">
-                <div class="event-detail-label">Date & Time</div>
-                <div class="event-detail-value">
-                    <div id="eventDate"></div>
-                    <div id="eventTime"></div>
-                </div>
-            </div>
-            <div class="event-detail-item">
-                <div class="event-detail-label">Venue</div>
-                <div class="event-detail-value" id="eventVenue"></div>
-            </div>
-            <div class="event-detail-item">
-                <div class="event-detail-label">Description</div>
-                <div class="event-detail-value" id="eventDesc"></div>
-            </div>
-            <div class="event-detail-item" id="notesSection" style="display: none;">
-                <div class="event-detail-label">Notes</div>
-                <div class="event-detail-value" id="eventNotes"></div>
-            </div>
-            <div class="event-detail-item" id="photoLinksSection" style="display: none;">
-                <div class="event-detail-label">Photo Links</div>
-                <div class="photo-links-list" id="photoLinksList"></div>
-            </div>
-        </div>
-        <div class="dialog-footer">
-            <button class="secondary" onclick="document.getElementById('eventDialog').close()">Close</button>
-            <button id="editEventBtn" style="display: none;">Edit</button>
-            <button id="deleteEventBtn" class="danger" style="display: none;">Delete</button>
-        </div>
-    </dialog>
+    const categories = [
+      { id: "dance", label: "Dance", color: "var(--dance)" },
+      { id: "music", label: "Music", color: "var(--music)" },
+      { id: "drama", label: "Drama", color: "var(--drama)" },
+      { id: "art", label: "Art", color: "var(--art)" },
+      { id: "literary", label: "Literary", color: "var(--literary)" },
+      { id: "fest", label: "Fest", color: "var(--fest)" },
+      { id: "other", label: "Other", color: "var(--other)" }
+    ];
+    const categoryById = new Map(categories.map(category => [category.id, category]));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const state = {
+      auth: null, db: null, user: null, role: null, events: [], filtered: [],
+        auth: null, db: null, user: null, role: null, events: [], filtered: [], hasLoaded: false,
+      month: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      selectedDate: toDateKey(new Date()), selectedEventId: null, editingEventId: null,
+      category: "", timelineIndex: 0, timelineVisited: false, unsubscribeEvents: null, frame: 0, loadFailed: false
+    };
 
-    <!-- Add/Edit Event Modal -->
-    <dialog id="eventFormDialog">
-        <div class="dialog-header">
-            <h2 class="dialog-title" id="formTitle">Add Event</h2>
-            <button class="dialog-close" aria-label="Close" onclick="document.getElementById('eventFormDialog').close()">✕</button>
-        </div>
-        <div class="dialog-content">
-            <form id="eventForm" class="modal-form">
-                <div class="form-group">
-                    <label for="eventTitle">Event Title *</label>
-                    <input type="text" id="eventTitle" required>
-                </div>
+    const byId = id => document.getElementById(id);
+    const categoryInfo = id => categoryById.get(id) || categoryById.get("other");
+    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    function toDateKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+    function parseEventDate(event) { return new Date(`${event.date}T${event.time || "00:00"}:00`); }
+    function sortedEvents(events) { return [...events].sort((a, b) => parseEventDate(a) - parseEventDate(b) || a.title.localeCompare(b.title)); }
+    function setStatus(message, isError = true) {
+      const target = byId("statusMessage");
+      target.textContent = message;
+      target.classList.toggle("status-message", Boolean(message));
+      if (message && !isError) window.setTimeout(() => { if (target.textContent === message) target.textContent = ""; }, 3200);
+    }
+    function safePhotoUrl(value) {
+      try { const url = new URL(value); return url.protocol === "https:" ? url.href : null; }
+      catch { return null; }
+    }
+    function escapeIcs(value) { return String(value ?? "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;"); }
 
-                <div class="form-group">
-                    <label for="eventDate">Date (YYYY-MM-DD) *</label>
-                    <input type="text" id="eventDate" placeholder="2024-12-25" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventTime">Time (HH:MM) *</label>
-                    <input type="text" id="eventTime" placeholder="18:30" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventVenue">Venue *</label>
-                    <input type="text" id="eventVenue" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventCategory">Category *</label>
-                    <select id="eventCategory" required>
-                        <option value="">Select Category</option>
-                        <option value="dance">Dance</option>
-                        <option value="music">Music</option>
-                        <option value="drama">Drama</option>
-                        <option value="art">Art</option>
-                        <option value="literary">Literary</option>
-                        <option value="fest">Fest</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Councils & Clubs *</label>
-                    <div class="tags-container" id="councilsContainer"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventDesc">Description *</label>
-                    <textarea id="eventDesc" required></textarea>
-                </div>
-
-                <div class="form-group" id="notesFormGroup" style="display: none;">
-                    <label for="eventNotes">Notes (GenSec only)</label>
-                    <textarea id="eventNotes"></textarea>
-                </div>
-
-                <div class="form-group" id="photoLinksFormGroup" style="display: none;">
-                    <label for="photoLinkInput">Add Photo Links (HTTPS only)</label>
-                    <div class="photo-links-input">
-                        <input type="url" id="photoLinkInput" placeholder="https://...">
-                        <button type="button" id="addPhotoLinkBtn">Add</button>
-                    </div>
-                    <div class="photo-links-list-edit" id="photoLinksEditList"></div>
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="button" class="secondary" onclick="document.getElementById('eventFormDialog').close()">Cancel</button>
-                    <button type="submit">Save Event</button>
-                </div>
-            </form>
-        </div>
-    </dialog>
-
-    <!-- Login Modal -->
-    <dialog id="loginDialog">
-        <div class="dialog-header">
-            <h2 class="dialog-title">Login</h2>
-            <button class="dialog-close" aria-label="Close" onclick="document.getElementById('loginDialog').close()">✕</button>
-        </div>
-        <div class="dialog-content">
-            <form id="loginForm" class="modal-form">
-                <div id="loginMessage"></div>
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" class="secondary" onclick="document.getElementById('loginDialog').close()">Cancel</button>
-                    <button type="submit">Login</button>
-                </div>
-            </form>
-        </div>
-    </dialog>
-
-    <!-- Delete Confirmation Dialog -->
-    <dialog id="deleteConfirmDialog">
-        <div class="dialog-header">
-            <h2 class="dialog-title">Delete Event?</h2>
-            <button class="dialog-close" aria-label="Close" onclick="document.getElementById('deleteConfirmDialog').close()">✕</button>
-        </div>
-        <div class="dialog-content">
-            <p>Are you sure you want to delete this event? This action cannot be undone.</p>
-        </div>
-        <div class="dialog-footer">
-            <button class="secondary" onclick="document.getElementById('deleteConfirmDialog').close()">Cancel</button>
-            <button id="confirmDeleteBtn" class="danger">Delete</button>
-        </div>
-    </dialog>
-
-    <!-- Firebase Configuration -->
-    <script type="module">
-        // ============================================
-        // FIREBASE CONFIGURATION
-        // ============================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyC86CA_FJF0Lc5WHBF6WNyOrACVfgUMdjk",
-            authDomain: "iit-goa-cultural-calendar.firebaseapp.com",
-            projectId: "iit-goa-cultural-calendar",
-            appId: "1:598654025498:web:2fa7917eea397aa187b6a3"
-        };
-
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // ============================================
-        // STATE MANAGEMENT
-        // ============================================
-        let currentUser = null;
-        let currentUserRole = null;
-        let allEvents = [];
-        let filteredEvents = [];
-        let currentMonth = new Date();
-        let selectedEventId = null;
-        let editingEventId = null;
-        let scrollThrottleId = null;
-        let councilsData = {};
-        let clubsData = {};
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function showMessage(containerId, message, type = 'error') {
-            const container = document.getElementById(containerId);
-            const messageClass = type === 'error' ? 'error-message' : 'success-message';
-            container.innerHTML = `<div class="${messageClass}">${escapeHtml(message)}</div>`;
-            if (type === 'success') {
-                setTimeout(() => {
-                    container.innerHTML = '';
-                }, 3000);
-            }
-        }
-
-        function formatDate(dateStr) {
-            const date = new Date(dateStr + 'T00:00:00');
-            return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        }
-
-        function isSameDay(date1, date2) {
-            return date1.getFullYear() === date2.getFullYear() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getDate() === date2.getDate();
-        }
-
-        function getEventColor(category) {
-            const colors = {
-                'dance': 'dance',
-                'music': 'music',
-                'drama': 'drama',
-                'art': 'art',
-                'literary': 'literary',
-                'fest': 'fest',
-                'other': 'other'
-            };
-            return colors[category] || 'other';
-        }
-
-        function initializeCouncilsAndClubs() {
-            councilsData = {
-                'Art Council': ['Photography Club', 'Painting Club', 'Sculpture Club'],
-                'Media Council': ['Photography Club', 'Videography Club', 'Podcast Club'],
-                'Lit Council': ['Writing Club', 'Debate Club', 'Poetry Club']
-            };
-            clubsData = {};
-            Object.keys(councilsData).forEach(council => {
-                clubsData[council] = councilsData[council];
-            });
-        }
-
-        function populateCouncilsCheckboxes() {
-            const container = document.getElementById('councilsContainer');
-            container.innerHTML = '';
-            Object.keys(councilsData).forEach(council => {
-                const label = document.createElement('label');
-                label.style.display = 'flex';
-                label.style.alignItems = 'center';
-                label.style.gap = '0.5rem';
-                label.style.marginBottom = '0.5rem';
-                label.innerHTML = `
-                    <input type="checkbox" class="council-checkbox" value="${council}" data-council="${council}">
-                    ${escapeHtml(council)}
-                `;
-                container.appendChild(label);
-            });
-        }
-
-        // ============================================
-        // AUTHENTICATION
-        // ============================================
-        async function loadUserRole(uid) {
-            try {
-                const roleDoc = await getDoc(doc(db, 'roles', uid));
-                if (roleDoc.exists()) {
-                    currentUserRole = roleDoc.data().role;
-                    updateUIBasedOnRole();
-                } else {
-                    currentUserRole = null;
-                    updateUIBasedOnRole();
-                }
-            } catch (error) {
-                console.error('Error loading user role:', error);
-            }
-        }
-
-        function updateUIBasedOnRole() {
-            const addEventBtn = document.getElementById('addEventBtn');
-            const editEventBtn = document.getElementById('editEventBtn');
-            const deleteEventBtn = document.getElementById('deleteEventBtn');
-            const notesFormGroup = document.getElementById('notesFormGroup');
-            const photoLinksFormGroup = document.getElementById('photoLinksFormGroup');
-            const roleBadge = document.getElementById('roleBadge');
-
-            if (currentUserRole) {
-                roleBadge.textContent = currentUserRole.toUpperCase();
-                roleBadge.classList.add('visible');
-            } else {
-                roleBadge.classList.remove('visible');
-            }
-
-            if (currentUserRole === 'gensec') {
-                addEventBtn.classList.add('visible');
-                notesFormGroup.style.display = 'block';
-            } else {
-                addEventBtn.classList.remove('visible');
-                notesFormGroup.style.display = 'none';
-            }
-
-            if (currentUserRole === 'gensec' || currentUserRole === 'originals') {
-                photoLinksFormGroup.style.display = 'block';
-            } else {
-                photoLinksFormGroup.style.display = 'none';
-            }
-
-            if (selectedEventId && editingEventId === null) {
-                editEventBtn.style.display = currentUserRole === 'gensec' ? 'block' : 'none';
-                deleteEventBtn.style.display = currentUserRole === 'gensec' ? 'block' : 'none';
-            }
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadUserRole(user.uid);
-                document.getElementById('loginBtn').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'block';
-            } else {
-                currentUser = null;
-                currentUserRole = null;
-                updateUIBasedOnRole();
-                document.getElementById('loginBtn').style.display = 'block';
-                document.getElementById('logoutBtn').style.display = 'none';
-            }
-            renderAllViews();
+    function buildFilters() {
+      for (const category of categories) {
+        const option = document.createElement("option");
+        option.value = category.id; option.textContent = category.label; byId("categorySelect").append(option);
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "legend-button"; button.setAttribute("aria-pressed", "false");
+        const swatch = document.createElement("span"); swatch.className = "swatch"; swatch.style.setProperty("--category", category.color); swatch.setAttribute("aria-hidden", "true");
+        const label = document.createElement("span"); label.textContent = category.label;
+        button.append(swatch, label);
+        button.addEventListener("click", () => {
+          state.category = state.category === category.id ? "" : category.id;
+          byId("categorySelect").value = state.category;
+          renderFilters();
         });
+        byId("categoryLegend").append(button);
+        const formOption = option.cloneNode(true); byId("eventCategory").append(formOption);
+      }
+    }
+    function renderFilters() {
+      byId("categorySelect").value = state.category;
+      [...byId("categoryLegend").querySelectorAll(".legend-button")].forEach((button, index) => {
+        button.setAttribute("aria-pressed", String(categories[index].id === state.category));
+      });
+      const search = byId("searchInput").value.trim().toLocaleLowerCase();
+      state.filtered = sortedEvents(state.events).filter(event => {
+        const text = [event.title, event.venue, event.desc, event.notes].join(" ").toLocaleLowerCase();
+        return (!search || text.includes(search)) && (!state.category || event.category === state.category);
+      });
+      const emptyResults = byId("emptyResults");
+      emptyResults.hidden = !state.hasLoaded || state.filtered.length > 0;
+      emptyResults.textContent = state.events.length ? "No events match. Try clearing the search or category." : "No events published yet. Check back soon.";
+      renderAll();
+    }
 
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            document.getElementById('loginDialog').showModal();
+    function eventButton(event, className = "day-event-row") {
+      const button = document.createElement("button"); button.type = "button"; button.className = className;
+      const dot = document.createElement("span"); dot.className = "event-dot"; dot.style.setProperty("--category", categoryInfo(event.category).color); dot.setAttribute("aria-hidden", "true");
+      const text = document.createElement("span");
+      const title = document.createElement("strong"); title.textContent = event.title;
+      const meta = document.createElement("small"); meta.textContent = `${event.time || "Time to be announced"} · ${event.venue || "Venue to be announced"}`;
+      text.append(title, meta); button.append(dot, text);
+      button.addEventListener("click", () => showEventDetails(event.id));
+      return button;
+    }
+    function renderCalendar() {
+      const grid = byId("calendarGrid"); grid.replaceChildren();
+      byId("monthHeading").textContent = state.month.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      for (const day of ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]) {
+        const heading = document.createElement("div"); heading.className = "weekday"; heading.textContent = day; heading.setAttribute("role", "columnheader"); grid.append(heading);
+      }
+      const start = new Date(state.month.getFullYear(), state.month.getMonth(), 1 - state.month.getDay());
+      for (let index = 0; index < 42; index++) {
+        const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
+        const key = toDateKey(date);
+        const cell = document.createElement("div"); cell.className = "calendar-day";
+        if (date.getMonth() !== state.month.getMonth()) cell.classList.add("is-outside");
+        if (key === toDateKey(new Date())) cell.classList.add("is-today");
+        cell.setAttribute("role", "gridcell");
+        const day = document.createElement("button"); day.type = "button"; day.className = "day-number"; day.textContent = String(date.getDate());
+        day.setAttribute("aria-label", `${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${key === toDateKey(new Date()) ? ", today" : ""}`);
+        day.addEventListener("click", () => selectDate(key)); cell.append(day);
+        const events = state.filtered.filter(event => event.date === key);
+        events.slice(0, 3).forEach(event => {
+          const chip = document.createElement("button"); chip.type = "button"; chip.className = "day-chip";
+          chip.style.setProperty("--category", categoryInfo(event.category).color); chip.textContent = event.title;
+          chip.addEventListener("click", () => showEventDetails(event.id)); cell.append(chip);
         });
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const messageContainer = document.getElementById('loginMessage');
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                document.getElementById('loginDialog').close();
-                document.getElementById('loginForm').reset();
-                messageContainer.innerHTML = '';
-            } catch (error) {
-                showMessage('loginMessage', error.message, 'error');
-            }
-        });
-
-        // ============================================
-        // EVENTS MANAGEMENT
-        // ============================================
-        async function loadEvents() {
-            try {
-                const eventsCollection = collection(db, 'events');
-                const snapshot = await getDocs(eventsCollection);
-                allEvents = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                filterAndRenderEvents();
-            } catch (error) {
-                console.error('Error loading events:', error);
-            }
+        if (events.length > 3) {
+          const more = document.createElement("button"); more.type = "button"; more.className = "more-chip"; more.textContent = `+${events.length - 3} more`;
+          more.setAttribute("aria-label", `Show all ${events.length} events on ${key}`); more.addEventListener("click", () => selectDate(key)); cell.append(more);
         }
-
-        function filterAndRenderEvents() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const councilFilter = document.getElementById('councilFilter').value;
-            const clubFilter = document.getElementById('clubFilter').value;
-
-            filteredEvents = allEvents.filter(event => {
-                const matchesSearch = !searchTerm || 
-                    event.title.toLowerCase().includes(searchTerm) ||
-                    event.venue.toLowerCase().includes(searchTerm) ||
-                    (event.desc && event.desc.toLowerCase().includes(searchTerm)) ||
-                    (event.notes && event.notes.toLowerCase().includes(searchTerm));
-
-                const matchesCouncil = !councilFilter || 
-                    (event.tags && event.tags.councils && event.tags.councils.includes(councilFilter)) ||
-                    (councilFilter === 'General' && (!event.tags || !event.tags.councils || event.tags.councils.length === 0));
-
-                const matchesClub = !clubFilter || 
-                    (event.tags && event.tags.clubs && event.tags.clubs.includes(clubFilter));
-
-                return matchesSearch && matchesCouncil && matchesClub;
-            });
-
-            renderAllViews();
-        }
-
-        function renderAllViews() {
-            renderCalendar();
-            renderTimeline();
-            checkEmptyState();
-        }
-
-        function renderCalendar() {
-            const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-            const prevLastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
-
-            const grid = document.getElementById('calendarGrid');
-            const monthLabel = document.getElementById('calendarMonth');
-
-            monthLabel.textContent = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            grid.innerHTML = '';
-
-            // Add day headers
-            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            dayHeaders.forEach(day => {
-                const header = document.createElement('div');
-                header.className = 'calendar-header';
-                header.textContent = day;
-                grid.appendChild(header);
-            });
-
-            // Add previous month days
-            for (let i = firstDay.getDay() - 1; i >= 0; i--) {
-                const dayNum = prevLastDay.getDate() - i;
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day other-month';
-                dayElement.innerHTML = `<div class="calendar-day-number">${dayNum}</div>`;
-                grid.appendChild(dayElement);
-            }
-
-            // Add current month days
-            for (let day = 1; day <= lastDay.getDate(); day++) {
-                const currentDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                
-                if (isSameDay(currentDate, new Date())) {
-                    dayElement.classList.add('today');
-                }
-
-                const dayNumberDiv = document.createElement('div');
-                dayNumberDiv.className = 'calendar-day-number';
-                dayNumberDiv.textContent = day;
-                dayElement.appendChild(dayNumberDiv);
-
-                // Add events for this day
-                const dayEvents = filteredEvents.filter(event => event.date === `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
-                dayEvents.slice(0, 3).forEach(event => {
-                    const chip = document.createElement('div');
-                    chip.className = `event-chip ${getEventColor(event.category)}`;
-                    chip.textContent = escapeHtml(event.title.substring(0, 10));
-                    chip.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        showEventDetails(event.id);
-                    });
-                    dayElement.appendChild(chip);
-                });
-
-                dayElement.addEventListener('click', () => {
-                    const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dayEventIds = filteredEvents.filter(e => e.date === dateStr).map(e => e.id);
-                    if (dayEventIds.length > 0) {
-                        showEventDetails(dayEventIds[0]);
-                    }
-                });
-
-                grid.appendChild(dayElement);
-            }
-
-            // Add next month days
-            const totalCells = grid.children.length - 7; // Excluding headers
-            const remainingCells = 42 - totalCells; // 6 rows × 7 columns
-            for (let i = 1; i <= remainingCells; i++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day other-month';
-                dayElement.innerHTML = `<div class="calendar-day-number">${i}</div>`;
-                grid.appendChild(dayElement);
-            }
-        }
-
-        function renderTimeline() {
-            const track = document.getElementById('timelineTrack');
-            track.innerHTML = '';
-
-            const sortedEvents = [...filteredEvents].sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateA - dateB;
-            });
-
-            sortedEvents.forEach((event, index) => {
-                const card = document.createElement('div');
-                card.className = 'event-card';
-                card.setAttribute('role', 'button');
-                card.setAttribute('tabindex', '0');
-                card.innerHTML = `
-                    <div class="event-month">${new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                    <div class="event-day-number">${new Date(event.date).getDate()}</div>
-                    <h3 class="event-card-title">${escapeHtml(event.title)}</h3>
-                    <div class="event-card-venue">📍 ${escapeHtml(event.venue)}</div>
-                    <span class="event-card-tag ${getEventColor(event.category)}">${escapeHtml(event.category)}</span>
-                `;
-                card.style.top = `${index * 300 + 200}px`;
-                card.addEventListener('click', () => showEventDetails(event.id));
-                card.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        showEventDetails(event.id);
-                    }
-                });
-                track.appendChild(card);
-            });
-
-            track.style.height = `${Math.max(sortedEvents.length * 300, 1000)}px`;
-        }
-
-        function updateTimelineOnScroll() {
-            const stage = document.getElementById('timelineStage');
-            const track = document.getElementById('timelineTrack');
-            const cards = track.querySelectorAll('.event-card');
-            const centerY = stage.clientHeight / 2;
-            const scrollProgress = stage.scrollTop / (stage.scrollHeight - stage.clientHeight);
-
-            cards.forEach((card, index) => {
-                const cardTop = parseFloat(card.style.top);
-                const cardCenter = cardTop + 100; // Approximate card height/2
-                const distance = cardCenter - (stage.scrollTop + centerY);
-                const progress = Math.max(-1, Math.min(1, distance / centerY));
-                
-                const zDepth = Math.max(0, 500 * (1 - Math.abs(progress)));
-                const opacity = Math.max(0.3, 1 - Math.abs(progress) * 0.7);
-                const rotateY = progress * 15;
-                const scale = 1 - Math.abs(progress) * 0.1;
-
-                card.style.transform = `translate3d(0, 0, ${zDepth}px) rotateY(${rotateY}deg) scale(${scale})`;
-                card.style.opacity = opacity;
-            });
-        }
-
-        document.getElementById('timelineStage').addEventListener('scroll', () => {
-            cancelAnimationFrame(scrollThrottleId);
-            scrollThrottleId = requestAnimationFrame(updateTimelineOnScroll);
-        }, { passive: true });
-
-        // ============================================
-        // EVENT DETAILS DIALOG
-        // ============================================
-        async function showEventDetails(eventId) {
-            selectedEventId = eventId;
-            editingEventId = null;
-
-            const event = allEvents.find(e => e.id === eventId);
-            if (!event) return;
-
-            document.getElementById('eventDialogTitle').textContent = escapeHtml(event.title);
-            document.getElementById('eventCategory').textContent = escapeHtml(event.category);
-            document.getElementById('eventCategory').className = `event-card-tag ${getEventColor(event.category)}`;
-            document.getElementById('eventDate').textContent = formatDate(event.date);
-            document.getElementById('eventTime').textContent = escapeHtml(event.time);
-            document.getElementById('eventVenue').textContent = escapeHtml(event.venue);
-            document.getElementById('eventDesc').textContent = escapeHtml(event.desc);
-
-            // Show notes only to gensec
-            const notesSection = document.getElementById('notesSection');
-            if (currentUserRole === 'gensec' && event.notes) {
-                notesSection.style.display = 'block';
-                document.getElementById('eventNotes').textContent = escapeHtml(event.notes);
-            } else {
-                notesSection.style.display = 'none';
-            }
-
-            // Show photo links
-            const photoLinksSection = document.getElementById('photoLinksSection');
-            const photoLinksList = document.getElementById('photoLinksList');
-            photoLinksList.innerHTML = '';
-
-            if (event.photoLinks && event.photoLinks.length > 0) {
-                photoLinksSection.style.display = 'block';
-                event.photoLinks.forEach((link, index) => {
-                    const a = document.createElement('a');
-                    a.href = link;
-                    a.target = '_blank';
-                    a.rel = 'noopener noreferrer';
-                    a.className = 'photo-link';
-                    a.textContent = `Photo Album ${index + 1}`;
-                    photoLinksList.appendChild(a);
-                });
-            } else {
-                photoLinksSection.style.display = 'none';
-            }
-
-            updateUIBasedOnRole();
-            document.getElementById('eventDialog').showModal();
-        }
-
-        document.getElementById('editEventBtn').addEventListener('click', () => {
-            const event = allEvents.find(e => e.id === selectedEventId);
-            if (!event) return;
-
-            editingEventId = selectedEventId;
-            document.getElementById('eventDialog').close();
-            openEventForm(event);
+        const dots = document.createElement("div"); dots.className = "event-dots"; dots.setAttribute("aria-hidden", "true");
+        [...new Set(events.map(event => event.category))].slice(0, 7).forEach(category => {
+          const dot = document.createElement("span"); dot.className = "event-dot"; dot.style.setProperty("--category", categoryInfo(category).color); dots.append(dot);
         });
+        cell.append(dots); grid.append(cell);
+      }
+      renderSelectedDay();
+    }
+    function selectDate(dateKey) { state.selectedDate = dateKey; renderSelectedDay(); }
+    function renderSelectedDay() {
+      const date = new Date(`${state.selectedDate}T00:00:00`);
+      byId("selectedDayHeading").textContent = `Events · ${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
+      const list = byId("dayEventList"); list.replaceChildren();
+      const events = sortedEvents(state.filtered.filter(event => event.date === state.selectedDate));
+      if (!events.length) {
+        const empty = document.createElement("p"); empty.className = "empty-inline"; empty.textContent = "Nothing scheduled for this day. Pick another date or check the next month."; list.append(empty); return;
+      }
+      events.forEach(event => list.append(eventButton(event)));
+    }
 
-        document.getElementById('deleteEventBtn').addEventListener('click', () => {
-            document.getElementById('eventDialog').close();
-            document.getElementById('deleteConfirmDialog').showModal();
-        });
+    function renderNextUp() {
+      const now = new Date();
+      const next = state.filtered.find(event => parseEventDate(event) >= now);
+      if (!next) {
+        byId("nextTitle").textContent = state.filtered.length ? "No more upcoming events in these results" : "No upcoming events yet";
+        byId("nextMeta").textContent = state.filtered.length ? "Try a different category or search" : "New campus gatherings will appear here";
+        byId("countdown").replaceChildren(document.createTextNode("--"));
+        const small = document.createElement("small"); small.textContent = "days · -- hours"; byId("countdown").append(small); return;
+      }
+      byId("nextTitle").textContent = next.title;
+      byId("nextMeta").textContent = `${parseEventDate(next).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · ${next.time} · ${next.venue}`;
+      const delta = Math.max(0, parseEventDate(next) - now);
+      const days = Math.floor(delta / 86400000); const hours = Math.floor(delta % 86400000 / 3600000);
+      byId("countdown").replaceChildren(document.createTextNode(`${days}d ${hours}h`));
+      const small = document.createElement("small"); small.textContent = "until it starts"; byId("countdown").append(small);
+    }
 
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
-            try {
-                if (currentUserRole !== 'gensec') {
-                    alert('Only GenSec can delete events');
-                    return;
-                }
-                await deleteDoc(doc(db, 'events', selectedEventId));
-                document.getElementById('deleteConfirmDialog').close();
-                await loadEvents();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                alert('Error deleting event: ' + error.message);
-            }
-        });
+    function createTicket(event, index) {
+      const card = document.createElement("button"); card.type = "button"; card.className = "timeline-card";
+      card.style.setProperty("--category", categoryInfo(event.category).color);
+      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${event.time}, ${event.venue}. Open event details.`);
+      const date = parseEventDate(event);
+      const dateWrap = document.createElement("div"); dateWrap.className = "ticket-date";
+      const day = document.createElement("span"); day.className = "ticket-day"; day.textContent = String(date.getDate());
+      const month = document.createElement("span"); month.className = "ticket-month"; month.textContent = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }); dateWrap.append(day, month);
+      const title = document.createElement("h3"); title.className = "ticket-title"; title.textContent = event.title;
+      const venue = document.createElement("p"); venue.className = "ticket-details"; venue.textContent = `⌖ ${event.venue}`;
+      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${event.time}`;
+      const tag = document.createElement("span"); tag.className = "category-tag"; tag.textContent = categoryInfo(event.category).label;
+      card.append(dateWrap, title, venue, time, tag);
+      card.addEventListener("click", () => showEventDetails(event.id));
+      card.dataset.index = String(index);
+      return card;
+    }
+    function renderTimeline() {
+      const runway = byId("timelineRunway"); const cards = byId("timelineCards");
+      cards.replaceChildren();
+      const events = state.filtered;
+      runway.classList.toggle("reduced", reducedMotion.matches);
+      if (!events.length) { runway.style.height = "auto"; return; }
+      events.forEach((event, index) => cards.append(createTicket(event, index)));
+      const step = Math.max(500, window.innerHeight * .76);
+      runway.style.height = reducedMotion.matches ? "auto" : `${Math.max(window.innerHeight, (events.length - 1) * step + window.innerHeight)}px`;
+      const nowIndex = events.findIndex(event => parseEventDate(event) >= new Date());
+      state.timelineIndex = nowIndex < 0 ? Math.max(0, events.length - 1) : nowIndex;
+      updateTimeline();
+    }
+    function getTimelineStep() { return Math.max(500, window.innerHeight * .76); }
+    function timelinePosition(index) {
+      const runwayTop = byId("timelineRunway").getBoundingClientRect().top + window.scrollY;
+      return runwayTop + index * getTimelineStep();
+    }
+    function updateTimeline() {
+      if (reducedMotion.matches) return;
+      const stage = byId("timelineStage"); const runway = byId("timelineRunway");
+      if (!stage || byId("timelineView").hidden || !state.filtered.length) return;
+      const step = getTimelineStep();
+      const relativeScroll = Math.max(0, window.scrollY - timelinePosition(0));
+      const progress = Math.max(0, Math.min(1, relativeScroll / Math.max(1, runway.offsetHeight - stage.offsetHeight)));
+      byId("timelineProgress").style.transform = `scaleX(${progress})`;
+      const centerIndex = Math.max(0, Math.min(state.filtered.length - 1, Math.round(relativeScroll / step)));
+      state.timelineIndex = centerIndex;
+      byId("monthMarkers").textContent = new Date(`${state.filtered[centerIndex].date}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const tickets = [...byId("timelineCards").children];
+      tickets.forEach((card, index) => {
+        const distance = (index * step - relativeScroll) / step;
+        const offset = (index - centerIndex) * 18;
+        const side = index % 2 === 0 ? -1 : 1;
+        const x = side * Math.min(140, window.innerWidth * .12) + (index - centerIndex) * 15;
+        const z = Math.max(-700, 480 - Math.abs(distance) * 620);
+        const opacity = Math.max(0, 1 - Math.max(0, Math.abs(distance) - .18) * 1.25);
+        const rotate = side * Math.min(9, Math.abs(distance) * 5);
+        card.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${offset}px), ${z}px) rotateY(${rotate}deg) scale(${Math.max(.82, 1 - Math.abs(distance) * .08)})`;
+        card.style.opacity = String(opacity);
+        card.style.zIndex = String(100 - Math.round(Math.abs(distance) * 10));
+        card.tabIndex = index === centerIndex ? 0 : -1;
+        card.classList.toggle("is-front", index === centerIndex);
+        if (index === centerIndex && document.activeElement?.classList.contains("timeline-card")) card.focus({ preventScroll: true });
+      });
+      const layerShift = relativeScroll * .035;
+      stage.querySelector(".parallax-one").style.transform = `translateY(${-layerShift}px)`;
+      stage.querySelector(".parallax-two").style.transform = `translateY(${layerShift * .62}px)`;
+      stage.querySelector(".parallax-three").style.transform = `translateY(${-layerShift * .34}px)`;
+    }
+    function jumpToTimeline(index) {
+      if (!state.filtered.length) return;
+      const targetIndex = Math.max(0, Math.min(state.filtered.length - 1, index));
+      state.timelineIndex = targetIndex;
+      if (reducedMotion.matches) {
+        const target = byId("timelineCards").children[targetIndex];
+        target?.scrollIntoView({ behavior: "auto", block: "center" });
+        target?.focus({ preventScroll: true });
+        return;
+      }
+      window.scrollTo({ top: timelinePosition(targetIndex), behavior: reducedMotion.matches ? "auto" : "smooth" });
+    }
 
-        // ============================================
-        // ADD/EDIT EVENT FORM
-        // ============================================
-        document.getElementById('addEventBtn').addEventListener('click', () => {
-            editingEventId = null;
-            openEventForm(null);
-        });
+    function renderDetails(event) {
+      const category = categoryInfo(event.category);
+      byId("detailBand").style.setProperty("--category", category.color);
+      byId("detailBand").style.background = category.color;
+      byId("detailTitle").textContent = event.title;
+      byId("detailCategory").textContent = category.label;
+      byId("detailCategory").style.setProperty("--category", category.color);
+      byId("detailDate").textContent = new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      byId("detailTime").textContent = event.time || "To be announced";
+      byId("detailVenue").textContent = event.venue || "To be announced";
+      byId("detailDescription").textContent = event.desc || "No description provided.";
+      byId("detailNotes").textContent = event.notes || "No additional notes.";
+      const photoList = byId("photoList"); photoList.replaceChildren();
+      (Array.isArray(event.photoLinks) ? event.photoLinks : []).forEach(link => {
+        const safeUrl = safePhotoUrl(link); if (!safeUrl) return;
+        const anchor = document.createElement("a"); anchor.href = safeUrl; anchor.target = "_blank"; anchor.rel = "noopener noreferrer";
+        anchor.textContent = `Photo album ${photoList.children.length + 1}`; photoList.append(anchor);
+      });
+      byId("photoField").hidden = photoList.children.length === 0;
+      byId("editEvent").hidden = state.role !== "gensec";
+      byId("deleteEvent").hidden = state.role !== "gensec";
+      byId("originalsPhotoTools").hidden = state.role !== "originals";
+      byId("eventDialog").showModal();
+    }
+    function showEventDetails(id) {
+      const event = state.events.find(item => item.id === id); if (!event) return;
+      state.selectedEventId = id; renderDetails(event);
+    }
+    function downloadCalendarFile() {
+      const event = state.events.find(item => item.id === state.selectedEventId); if (!event) return;
+      const start = `${event.date.replaceAll("-", "") }T${(event.time || "00:00").replace(":", "")}00`;
+      const endDate = new Date(parseEventDate(event).getTime() + 2 * 60 * 60 * 1000);
+      const end = `${toDateKey(endDate).replaceAll("-", "")}T${String(endDate.getHours()).padStart(2, "0")}${String(endDate.getMinutes()).padStart(2, "0")}00`;
+      const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//IIT Goa//Cultural Calendar//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", `UID:${crypto.randomUUID()}@iitgoa-cultural-calendar`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${escapeIcs(event.title)}`, `LOCATION:${escapeIcs(event.venue)}`, `DESCRIPTION:${escapeIcs(event.desc)}`, "END:VEVENT", "END:VCALENDAR"];
+      const blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
+      anchor.href = url; anchor.download = `${event.date}-${event.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "campus-event"}.ics`;
+      document.body.append(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+    }
 
-        function openEventForm(event) {
-            populateCouncilsCheckboxes();
-            const formTitle = document.getElementById('formTitle');
-            const form = document.getElementById('eventForm');
+    function openEventForm(event = null) {
+      if (state.role !== "gensec") return;
+      state.editingEventId = event?.id || null;
+      byId("formHeading").textContent = event ? "Edit event" : "Add an event";
+      byId("eventTitle").value = event?.title || "";
+      byId("eventDate").value = event?.date || "";
+      byId("eventTime").value = event?.time || "";
+      byId("eventVenue").value = event?.venue || "";
+      byId("eventCategory").value = event?.category || "";
+      byId("eventDescription").value = event?.desc || "";
+      byId("eventNotes").value = event?.notes || "";
+      byId("notesInputField").hidden = state.role !== "gensec";
+      byId("eventFormDialog").showModal();
+    }
+    async function saveEvent(formEvent) {
+      formEvent.preventDefault(); if (state.role !== "gensec") return;
+      const date = byId("eventDate").value; const time = byId("eventTime").value;
+      const eventData = {
+        title: byId("eventTitle").value.trim(), date, time,
+        venue: byId("eventVenue").value.trim(), category: byId("eventCategory").value,
+        desc: byId("eventDescription").value.trim(), notes: byId("eventNotes").value.trim()
+      };
+      if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return;
+      try {
+        if (state.editingEventId) await updateDoc(doc(state.db, "events", state.editingEventId), eventData);
+        else await addDoc(collection(state.db, "events"), { ...eventData, photoLinks: [] });
+        byId("eventFormDialog").close(); setStatus("Event saved.", false);
+      } catch (error) { setStatus(`Could not save the event: ${error.message}`); }
+    }
+    async function addPhotoLink(formEvent) {
+      formEvent.preventDefault();
+      const event = state.events.find(item => item.id === state.selectedEventId);
+      const link = safePhotoUrl(byId("photoUrl").value.trim());
+      if (state.role !== "originals" || !event || !link || !link.startsWith("https://")) { setStatus("Photo albums must use a valid https:// link."); return; }
+      try {
+        await updateDoc(doc(state.db, "events", event.id), { photoLinks: arrayUnion(link) });
+        byId("photoUrl").value = ""; setStatus("Photo album link added.", false);
+      } catch (error) { setStatus(`Could not add the photo link: ${error.message}`); }
+    }
+    async function confirmDelete() {
+      if (state.role !== "gensec" || !state.selectedEventId) return;
+      try {
+        await deleteDoc(doc(state.db, "events", state.selectedEventId));
+        byId("deleteDialog").close(); byId("eventDialog").close(); setStatus("Event deleted.", false);
+      } catch (error) { setStatus(`Could not delete the event: ${error.message}`); }
+    }
 
-            if (event) {
-                formTitle.textContent = 'Edit Event';
-                document.getElementById('eventTitle').value = event.title;
-                document.getElementById('eventDate').value = event.date;
-                document.getElementById('eventTime').value = event.time;
-                document.getElementById('eventVenue').value = event.venue;
-                document.getElementById('eventCategory').value = event.category;
-                document.getElementById('eventDesc').value = event.desc;
-                document.getElementById('eventNotes').value = event.notes || '';
-
-                // Check councils
-                if (event.tags && event.tags.councils) {
-                    event.tags.councils.forEach(council => {
-                        const checkbox = document.querySelector(`[data-council="${council}"]`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                }
-
-                // Load photo links
-                const photoLinksList = document.getElementById('photoLinksEditList');
-                photoLinksList.innerHTML = '';
-                if (event.photoLinks && event.photoLinks.length > 0) {
-                    event.photoLinks.forEach(link => {
-                        addPhotoLinkToList(link);
-                    });
-                }
-            } else {
-                formTitle.textContent = 'Add Event';
-                form.reset();
-                document.getElementById('photoLinksEditList').innerHTML = '';
-            }
-
-            document.getElementById('eventFormDialog').showModal();
+    function renderAll() { renderCalendar(); renderTimeline(); renderNextUp(); }
+    function setActiveTab(tab) {
+      const calendarActive = tab === "calendar";
+      byId("calendarTab").setAttribute("aria-selected", String(calendarActive));
+      byId("timelineTab").setAttribute("aria-selected", String(!calendarActive));
+      byId("calendarView").hidden = !calendarActive; byId("timelineView").hidden = calendarActive;
+      if (!calendarActive) {
+        if (!state.timelineVisited) {
+          state.timelineVisited = true;
+          const nextIndex = state.filtered.findIndex(event => parseEventDate(event) >= new Date());
+          jumpToTimeline(nextIndex < 0 ? 0 : nextIndex);
+        } else updateTimeline();
+      }
+    }
+    function subscribeToEvents() {
+      state.unsubscribeEvents?.();
+      state.unsubscribeEvents = onSnapshot(collection(state.db, "events"), snapshot => {
+        state.events = snapshot.docs.map(document => ({ id: document.id, ...document.data() }));
+        state.loadFailed = false; state.hasLoaded = true; setStatus(""); renderFilters();
+        if (state.selectedEventId && byId("eventDialog").open) {
+          const selectedEvent = state.events.find(event => event.id === state.selectedEventId);
+          if (selectedEvent) renderDetails(selectedEvent);
         }
+      }, error => {
+        console.error("Could not load events", error); state.loadFailed = true; state.hasLoaded = false;
+        byId("emptyResults").hidden = true;
+        state.events = []; state.filtered = []; renderAll();
+        setStatus("Could not load events. Check the Firebase config and Firestore rules.");
+      });
+    }
+    async function updateRole(user) {
+      state.user = user; state.role = null;
+      if (user) {
+        try {
+          const roleDocument = await getDoc(doc(state.db, "roles", user.uid));
+          const role = roleDocument.exists() ? roleDocument.data().role : null;
+          if (role === "gensec" || role === "originals") state.role = role;
+        } catch (error) { setStatus(`Signed in, but the organiser role could not be read: ${error.message}`); }
+      }
+      const badge = byId("roleBadge");
+      badge.textContent = state.role === "gensec" ? "General Secretary" : state.role === "originals" ? "Originals Head" : "Signed in · no organiser role";
+      badge.classList.toggle("visible", Boolean(user));
+      byId("loginButton").hidden = Boolean(user); byId("logoutButton").hidden = !user;
+      byId("addEventButton").hidden = state.role !== "gensec";
+      if (state.selectedEventId && byId("eventDialog").open) {
+        const event = state.events.find(item => item.id === state.selectedEventId); if (event) renderDetails(event);
+      }
+    }
+    function initFirebase() {
+      const hasPlaceholder = Object.values(firebaseConfig).some(value => value.startsWith("YOUR_"));
+      if (hasPlaceholder) {
+        byId("loginButton").disabled = true;
+        byId("loginButton").title = "Add Firebase web app settings to enable organiser login.";
+        setStatus("Add your Firebase web app settings in the clearly marked config block to connect live events.");
+        return;
+      }
+      try {
+        const app = initializeApp(firebaseConfig); state.auth = getAuth(app); state.db = getFirestore(app);
+        subscribeToEvents();
+        onAuthStateChanged(state.auth, async user => { await updateRole(user); renderAll(); });
+      } catch (error) {
+        console.error("Firebase initialization failed", error);
+        setStatus("Could not load events. Check the Firebase config.");
+      }
+    }
 
-        document.getElementById('addPhotoLinkBtn').addEventListener('click', () => {
-            const input = document.getElementById('photoLinkInput');
-            const link = input.value.trim();
-
-            if (!link) {
-                alert('Please enter a URL');
-                return;
-            }
-
-            if (!link.startsWith('https://')) {
-                alert('URL must start with https://');
-                return;
-            }
-
-            addPhotoLinkToList(link);
-            input.value = '';
-        });
-
-        function addPhotoLinkToList(link) {
-            const list = document.getElementById('photoLinksEditList');
-            const item = document.createElement('div');
-            item.className = 'photo-link-item';
-            item.innerHTML = `
-                <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.substring(0, 50))}</a>
-                <button type="button" class="danger" data-link="${escapeHtml(link)}">Remove</button>
-            `;
-            item.querySelector('button').addEventListener('click', (e) => {
-                e.preventDefault();
-                item.remove();
-            });
-            list.appendChild(item);
-        }
-
-        document.getElementById('eventForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (currentUserRole !== 'gensec') {
-                alert('Only GenSec can add or edit events');
-                return;
-            }
-
-            const title = document.getElementById('eventTitle').value.trim();
-            const date = document.getElementById('eventDate').value.trim();
-            const time = document.getElementById('eventTime').value.trim();
-            const venue = document.getElementById('eventVenue').value.trim();
-            const category = document.getElementById('eventCategory').value;
-            const desc = document.getElementById('eventDesc').value.trim();
-            const notes = document.getElementById('eventNotes').value.trim();
-
-            // Validate date format
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                alert('Date must be in YYYY-MM-DD format');
-                return;
-            }
-
-            // Validate time format
-            if (!/^\d{2}:\d{2}$/.test(time)) {
-                alert('Time must be in HH:MM format');
-                return;
-            }
-
-            // Get selected councils
-            const selectedCouncils = Array.from(document.querySelectorAll('.council-checkbox:checked')).map(cb => cb.value);
-
-            // Get photo links
-            const photoLinks = Array.from(document.querySelectorAll('.photo-link-item a')).map(a => a.href);
-
-            if (!title || !date || !time || !venue || !category || !desc) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            const eventData = {
-                title,
-                date,
-                time,
-                venue,
-                category,
-                desc,
-                notes,
-                tags: {
-                    councils: selectedCouncils,
-                    clubs: []
-                },
-                photoLinks: photoLinks || []
-            };
-
-            try {
-                if (editingEventId) {
-                    // Edit existing event
-                    await updateDoc(doc(db, 'events', editingEventId), eventData);
-                } else {
-                    // Add new event
-                    await addDoc(collection(db, 'events'), eventData);
-                }
-                document.getElementById('eventFormDialog').close();
-                await loadEvents();
-            } catch (error) {
-                console.error('Error saving event:', error);
-                alert('Error saving event: ' + error.message);
-            }
-        });
-
-        // ============================================
-        // TAB SWITCHING
-        // ============================================
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const tab = btn.dataset.tab;
-                document.getElementById('calendarContainer').classList.remove('active');
-                document.getElementById('timelineContainer').classList.remove('active');
-
-                if (tab === 'calendar') {
-                    document.getElementById('calendarContainer').classList.add('active');
-                } else {
-                    document.getElementById('timelineContainer').classList.add('active');
-                    updateTimelineOnScroll();
-                }
-            });
-        });
-
-        // ============================================
-        // MONTH NAVIGATION
-        // ============================================
-        document.getElementById('prevMonthBtn').addEventListener('click', () => {
-            currentMonth.setMonth(currentMonth.getMonth() - 1);
-            renderCalendar();
-        });
-
-        document.getElementById('nextMonthBtn').addEventListener('click', () => {
-            currentMonth.setMonth(currentMonth.getMonth() + 1);
-            renderCalendar();
-        });
-
-        // ============================================
-        // FILTERS
-        // ============================================
-        document.getElementById('searchInput').addEventListener('input', filterAndRenderEvents);
-        document.getElementById('councilFilter').addEventListener('change', filterAndRenderEvents);
-        document.getElementById('clubFilter').addEventListener('change', filterAndRenderEvents);
-
-        // ============================================
-        // EMPTY STATE
-        // ============================================
-        function checkEmptyState() {
-            const emptyState = document.getElementById('emptyState');
-            const calendarContainer = document.getElementById('calendarContainer');
-            const timelineContainer = document.getElementById('timelineContainer');
-
-            if (filteredEvents.length === 0) {
-                emptyState.style.display = 'block';
-                calendarContainer.style.display = 'none';
-                timelineContainer.style.display = 'none';
-            } else {
-                emptyState.style.display = 'none';
-                if (document.querySelector('.tab-btn.active').dataset.tab === 'calendar') {
-                    calendarContainer.style.display = 'block';
-                    timelineContainer.style.display = 'none';
-                } else {
-                    calendarContainer.style.display = 'none';
-                    timelineContainer.style.display = 'block';
-                }
-            }
-        }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        initializeCouncilsAndClubs();
-        loadEvents();
-    </script>
+    buildFilters();
+    renderAll();
+    byId("searchInput").addEventListener("input", renderFilters);
+    byId("categorySelect").addEventListener("change", event => { state.category = event.target.value; renderFilters(); });
+    byId("previousMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); renderCalendar(); });
+    byId("nextMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); renderCalendar(); });
+    byId("todayButton").addEventListener("click", () => { const now = new Date(); state.month = new Date(now.getFullYear(), now.getMonth(), 1); state.selectedDate = toDateKey(now); renderCalendar(); });
+    byId("calendarTab").addEventListener("click", () => setActiveTab("calendar"));
+    byId("timelineTab").addEventListener("click", () => setActiveTab("timeline"));
+    byId("addEventButton").addEventListener("click", () => openEventForm());
+    byId("loginButton").addEventListener("click", () => byId("loginDialog").showModal());
+    byId("logoutButton").addEventListener("click", async () => { try { await signOut(state.auth); } catch (error) { setStatus(`Could not sign out: ${error.message}`); } });
+    byId("loginForm").addEventListener("submit", async event => {
+      event.preventDefault(); byId("loginError").textContent = "";
+      try {
+        await signInWithEmailAndPassword(state.auth, byId("loginEmail").value.trim(), byId("loginPassword").value);
+        byId("loginDialog").close(); byId("loginForm").reset();
+      } catch (error) { byId("loginError").textContent = "Sign-in failed. Check the email, password, and Firebase Auth setup."; }
+    });
+    byId("eventForm").addEventListener("submit", saveEvent);
+    byId("photoLinkForm").addEventListener("submit", addPhotoLink);
+    byId("editEvent").addEventListener("click", () => { const event = state.events.find(item => item.id === state.selectedEventId); byId("eventDialog").close(); if (event) openEventForm(event); });
+    byId("deleteEvent").addEventListener("click", () => {
+      const event = state.events.find(item => item.id === state.selectedEventId);
+      byId("deletePrompt").textContent = `“${event?.title || "This event"}” will be removed from the calendar.`;
+      byId("eventDialog").close(); byId("deleteDialog").showModal();
+    });
+    byId("confirmDelete").addEventListener("click", confirmDelete);
+    byId("downloadIcs").addEventListener("click", downloadCalendarFile);
+    byId("jumpNextButton").addEventListener("click", () => {
+      const next = state.filtered.findIndex(event => parseEventDate(event) >= new Date());
+      jumpToTimeline(next < 0 ? 0 : next);
+    });
+    byId("timelineStage").addEventListener("keydown", event => {
+      if (!["ArrowDown", "ArrowUp", "PageDown", "PageUp"].includes(event.key)) return;
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" || event.key === "PageDown" ? 1 : -1;
+      jumpToTimeline(state.timelineIndex + direction);
+    });
+    byId("timelineStage").addEventListener("scroll", () => {
+      cancelAnimationFrame(state.frame); state.frame = requestAnimationFrame(updateTimeline);
+    }, { passive: true });
+    window.addEventListener("scroll", () => {
+      cancelAnimationFrame(state.frame); state.frame = requestAnimationFrame(updateTimeline);
+    }, { passive: true });
+    window.addEventListener("resize", () => { renderTimeline(); updateTimeline(); }, { passive: true });
+    reducedMotion.addEventListener("change", renderTimeline);
+    document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => byId(button.dataset.close).close()));
+    document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
+    window.setInterval(renderNextUp, 60_000);
+    initFirebase();
+  </script>
 </body>
 </html>
