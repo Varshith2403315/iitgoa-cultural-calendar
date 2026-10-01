@@ -27,8 +27,11 @@ Create and edit events through the General Secretary account in the website. Eac
 | `desc` | string | `An evening of student performances.` |
 | `notes` | string | `Bring your campus ID.` |
 | `photoLinks` | array of strings | `https://example.org/album` |
+| `eventEnd` | Firestore timestamp | Two hours after the scheduled start |
 
-Supported categories are `dance`, `music`, `drama`, `art`, `literary`, `fest`, and `other`. The General Secretary can add, edit, and delete events, including their public notes. The Originals Head can add HTTPS photo album links to existing events. Firestore rules are the authority for these permissions; hiding controls in the page is only a user-interface convenience.
+Supported categories are `dance`, `music`, `drama`, `art`, `literary`, `fest`, and `other`. The General Secretary can add, edit, and delete events, including their public notes. The Originals Head can append exactly one HTTPS photo album link per update, only after `eventEnd`. For this calendar, an event is considered complete two hours after its scheduled start because event duration is not entered separately. Firestore rules enforce the completion timestamp and prevent Originals from removing links or changing other event fields.
+
+Events created before `eventEnd` was added need a one-time General Secretary edit and save before their photo-link control becomes available. This writes their completion timestamp. Publish the updated [`firestore.rules`](firestore.rules) to Firebase after deploying this version of the site.
 
 ## Run locally
 

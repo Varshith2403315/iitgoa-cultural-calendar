@@ -10,6 +10,17 @@ service cloud.firestore {
     }
 
     match /events/{eventId} {
+      function appendsHttpsPhotoLink() {
+        let oldLinks = resource.data.photoLinks;
+        let newLinks = request.resource.data.photoLinks;
+        return oldLinks is list &&
+          newLinks is list &&
+          newLinks.size() == oldLinks.size() + 1 &&
+          newLinks.hasAll(oldLinks) &&
+          newLinks[oldLinks.size()] is string &&
+          newLinks[oldLinks.size()].matches('^https://.+');
+      }
+
       allow read: if true;
 
       allow create: if signedIn() && role() == 'gensec';
@@ -20,7 +31,10 @@ service cloud.firestore {
         role() == 'gensec' ||
         (
           role() == 'originals' &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks'])
+          resource.data.eventEnd is timestamp &&
+          resource.data.eventEnd < request.time &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks']) &&
+          appendsHttpsPhotoLink()
         )
       );
     }

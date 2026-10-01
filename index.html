@@ -123,6 +123,7 @@
       background: #fff; overflow: hidden; transition: border-color .15s ease, background-color .15s ease;
     }
     .calendar-day:hover { border-color: #8d979f; background: #fcfcfd; }
+    .calendar-day.is-selected { border-color: var(--accent-deep); background: #fff8fb; box-shadow: inset 0 0 0 1px var(--accent-deep); }
     .calendar-day.is-outside { background: #f0f2f3; color: #68727a; }
     .calendar-day.is-today { outline: 3px solid var(--accent); outline-offset: -3px; }
     .day-number {
@@ -154,15 +155,34 @@
     .timeline-runway { position: relative; height: 100vh; min-height: 600px; }
     .timeline-stage {
       position: sticky; top: 0; height: 100vh; max-height: 900px; min-height: 560px; overflow: hidden;
-      perspective: 900px; isolation: isolate; background: #f0f2f3;
+      perspective: 900px; isolation: isolate; background: linear-gradient(145deg, #f8f9fa 0%, #edf1f3 48%, #dce5e8 100%);
     }
-    .parallax-layer { position: absolute; z-index: -1; pointer-events: none; border: 0; }
-    .parallax-one { top: 13%; left: -6%; width: 56vw; height: 22vh; transform: skewY(-7deg); background: #f2e6ed; }
-    .parallax-two { right: -5%; bottom: 12%; width: 54vw; height: 25vh; transform: skewY(6deg); background: #e0eeeb; }
-    .parallax-three { top: 26%; right: 12%; width: 22vw; height: 1px; background: #b6bec3; }
+    .timeline-stage::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent 0 62px, #53636b0b 63px 64px), linear-gradient(112deg, transparent 0 28%, #ffffff88 28.1% 28.25%, transparent 28.35% 69%, #ffffff70 69.1% 69.25%, transparent 69.35%);
+    }
+    .timeline-stage::after {
+      content: ""; position: absolute; z-index: -1; left: -12%; bottom: -37%; width: 124%; height: 64%;
+      pointer-events: none; transform: rotateX(64deg); transform-origin: center top;
+      background: repeating-linear-gradient(0deg, transparent 0 37px, #53636b27 38px 39px), repeating-linear-gradient(90deg, transparent 0 74px, #53636b22 75px 76px), linear-gradient(#e8edef, #d9e1e4);
+      border-top: 1px solid #73838a44;
+    }
+    .parallax-layer { position: absolute; z-index: 0; pointer-events: none; border: 1px solid #ffffffc9; transform-style: preserve-3d; }
+    .parallax-one {
+      top: 11%; left: -8%; width: 44vw; height: 35vh; clip-path: polygon(0 12%, 78% 0, 100% 68%, 22% 100%);
+      background: linear-gradient(135deg, #f7e7ee, #e5cbd8); box-shadow: 18px 24px 0 #c7aeba55;
+    }
+    .parallax-two {
+      right: -7%; bottom: 9%; width: 43vw; height: 38vh; clip-path: polygon(20% 0, 100% 19%, 78% 100%, 0 72%);
+      background: linear-gradient(145deg, #e2efec, #c9ded9); box-shadow: -18px 20px 0 #a9c4bd66;
+    }
+    .parallax-three {
+      top: 24%; right: 16%; width: 15vw; height: 20vh; clip-path: polygon(50% 0, 100% 28%, 100% 76%, 50% 100%, 0 76%, 0 28%);
+      background: linear-gradient(130deg, #f5e6c7, #e2d2ad); border: 0;
+    }
     .timeline-progress { position: absolute; z-index: 5; top: 0; left: 0; width: 100%; height: 5px; background: #1b134025; }
     .timeline-progress span { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
-    .timeline-spine { position: absolute; top: 12%; bottom: 12%; left: 50%; width: 1px; background: #aab2b8; }
+    .timeline-spine { position: absolute; z-index: 1; top: 12%; bottom: 12%; left: 50%; width: 1px; background: #829098aa; }
     .month-marker { position: absolute; top: 12%; left: 50%; z-index: 2; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: .7rem; font-weight: 700; transform: translate(-50%, -50%); }
     .timeline-card {
       position: absolute; top: 50%; left: 50%; width: min(440px, 42vw); min-height: 250px; padding: 22px;
@@ -178,7 +198,8 @@
     .category-tag { display: inline-block; margin-top: 11px; padding: 3px 8px; border: 1px solid color-mix(in srgb, var(--category) 55%, white); border-radius: 999px; background: color-mix(in srgb, var(--category) 12%, white); color: var(--ink); font-size: .74rem; font-weight: 700; }
     .timeline-card.is-front { z-index: 4; }
     .timeline-runway.reduced { height: auto !important; min-height: 0; padding: 4px 0; }
-    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #dfd7fa; }
+    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #f0f2f3; }
+    .timeline-runway.reduced .timeline-stage::before, .timeline-runway.reduced .timeline-stage::after { display: none; }
     .timeline-runway.reduced .timeline-spine, .timeline-runway.reduced .month-marker, .timeline-runway.reduced .timeline-progress { display: none; }
     .timeline-runway.reduced .timeline-card { position: relative; top: auto; left: auto; width: min(650px, 100%); min-height: 0; margin: 12px auto; opacity: 1 !important; transform: none !important; will-change: auto; }
     .timeline-runway.reduced .parallax-layer { display: none; }
@@ -299,7 +320,7 @@
           <button class="button secondary small" id="nextMonth" type="button" aria-label="Next month">Next →</button>
         </div>
       </div>
-      <div class="calendar-grid" id="calendarGrid" aria-label="Monthly event calendar"></div>
+      <div class="calendar-grid" id="calendarGrid" role="grid" aria-label="Monthly event calendar"></div>
       <section class="selected-day-events" id="selectedDayEvents" aria-live="polite">
         <h3 id="selectedDayHeading">Events on this day</h3>
         <div class="day-event-list" id="dayEventList"></div>
@@ -340,6 +361,7 @@
       </div>
       <div id="originalsPhotoTools" hidden>
         <hr class="section-rule">
+        <p class="field-help" id="photoAccessNote"></p>
         <form class="photo-form" id="photoLinkForm">
           <div class="field"><label for="photoUrl">Add a photo album link</label><input id="photoUrl" type="url" placeholder="https://…" pattern="https://.*" required><small class="field-help">Use a secure https:// link.</small></div>
           <button class="button small" type="submit">Add link</button>
@@ -401,7 +423,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const categories = [
       { id: "dance", label: "Dance", color: "var(--dance)" },
@@ -429,6 +451,12 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     }
     function parseEventDate(event) { return new Date(`${event.date}T${event.time || "00:00"}:00`); }
+    function eventEndTimestamp(date, time) {
+      return Timestamp.fromDate(new Date(new Date(`${date}T${time}:00`).getTime() + 2 * 60 * 60 * 1000));
+    }
+    function eventIsCompleted(event) {
+      return Boolean(event.eventEnd?.toDate && event.eventEnd.toDate() <= new Date());
+    }
     function sortedEvents(events) { return [...events].sort((a, b) => parseEventDate(a) - parseEventDate(b) || a.title.localeCompare(b.title)); }
     function setStatus(message, isError = true) {
       const target = byId("statusMessage");
@@ -500,9 +528,31 @@
         if (date.getMonth() !== state.month.getMonth()) cell.classList.add("is-outside");
         if (key === toDateKey(new Date())) cell.classList.add("is-today");
         cell.setAttribute("role", "gridcell");
-        const day = document.createElement("button"); day.type = "button"; day.className = "day-number"; day.textContent = String(date.getDate());
-        day.setAttribute("aria-label", `${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${key === toDateKey(new Date()) ? ", today" : ""}`);
-        day.addEventListener("click", () => selectDate(key)); cell.append(day);
+        cell.setAttribute("aria-selected", String(key === state.selectedDate));
+        cell.setAttribute("aria-label", date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }));
+        cell.dataset.date = key;
+        cell.tabIndex = key === state.selectedDate ? 0 : -1;
+        if (key === state.selectedDate) cell.classList.add("is-selected");
+        cell.addEventListener("click", event => {
+          if (event.target.closest("button")) return;
+          selectDate(key);
+        });
+        cell.addEventListener("keydown", event => {
+          if (event.target !== cell) return;
+          if (["Enter", " "].includes(event.key)) {
+            event.preventDefault();
+            selectDate(key);
+            return;
+          }
+          const offsets = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+          if (offsets[event.key] !== undefined) {
+            event.preventDefault();
+            const nextDate = new Date(`${key}T00:00:00`);
+            nextDate.setDate(nextDate.getDate() + offsets[event.key]);
+            selectDate(toDateKey(nextDate));
+          }
+        });
+        const day = document.createElement("span"); day.className = "day-number"; day.textContent = String(date.getDate()); cell.append(day);
         const events = state.filtered.filter(event => event.date === key);
         events.slice(0, 3).forEach(event => {
           const chip = document.createElement("button"); chip.type = "button"; chip.className = "day-chip";
@@ -521,7 +571,15 @@
       }
       renderSelectedDay();
     }
-    function selectDate(dateKey) { state.selectedDate = dateKey; renderSelectedDay(); }
+    function selectDate(dateKey) {
+      state.selectedDate = dateKey;
+      const date = new Date(`${dateKey}T00:00:00`);
+      if (date.getMonth() !== state.month.getMonth() || date.getFullYear() !== state.month.getFullYear()) {
+        state.month = new Date(date.getFullYear(), date.getMonth(), 1);
+      }
+      renderCalendar();
+      byId("calendarGrid").querySelector(`[data-date="${dateKey}"]`)?.focus({ preventScroll: true });
+    }
     function renderSelectedDay() {
       const date = new Date(`${state.selectedDate}T00:00:00`);
       byId("selectedDayHeading").textContent = `Events · ${date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
@@ -575,7 +633,7 @@
       if (!events.length) { runway.style.height = "auto"; return; }
       events.forEach((event, index) => cards.append(createTicket(event, index)));
       const step = Math.max(500, window.innerHeight * .76);
-      runway.style.height = reducedMotion.matches ? "auto" : `${Math.max(window.innerHeight, (events.length - 1) * step + window.innerHeight)}px`;
+      runway.style.height = reducedMotion.matches ? "auto" : `${Math.max(1, events.length - 1) * step + window.innerHeight}px`;
       const nowIndex = events.findIndex(event => parseEventDate(event) >= new Date());
       state.timelineIndex = nowIndex < 0 ? Math.max(0, events.length - 1) : nowIndex;
       updateTimeline();
@@ -604,8 +662,9 @@
         const x = side * Math.min(140, window.innerWidth * .12) + (index - centerIndex) * 15;
         const z = Math.max(-700, 480 - Math.abs(distance) * 620);
         const opacity = Math.max(0, 1 - Math.max(0, Math.abs(distance) - .18) * 1.25);
-        const rotate = side * Math.min(9, Math.abs(distance) * 5);
-        card.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${offset}px), ${z}px) rotateY(${rotate}deg) scale(${Math.max(.82, 1 - Math.abs(distance) * .08)})`;
+        const rotate = side * Math.min(12, Math.abs(distance) * 7);
+        const pitch = Math.sign(distance) * Math.min(7, Math.abs(distance) * 4);
+        card.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${offset}px), ${z}px) rotateY(${rotate}deg) rotateX(${pitch}deg) scale(${Math.max(.82, 1 - Math.abs(distance) * .08)})`;
         card.style.opacity = String(opacity);
         card.style.zIndex = String(100 - Math.round(Math.abs(distance) * 10));
         card.tabIndex = index === centerIndex ? 0 : -1;
@@ -652,6 +711,11 @@
       byId("editEvent").hidden = state.role !== "gensec";
       byId("deleteEvent").hidden = state.role !== "gensec";
       byId("originalsPhotoTools").hidden = state.role !== "originals";
+      const photoLinkForm = byId("photoLinkForm");
+      photoLinkForm.hidden = !eventIsCompleted(event);
+      byId("photoAccessNote").textContent = event.eventEnd
+        ? eventIsCompleted(event) ? "This event is complete. Add its photo album links below." : "Photo album links unlock two hours after the scheduled start."
+        : "This older event needs a General Secretary to save it once before photo links can be added.";
       byId("eventDialog").showModal();
     }
     function showEventDetails(id) {
@@ -690,7 +754,8 @@
       const eventData = {
         title: byId("eventTitle").value.trim(), date, time,
         venue: byId("eventVenue").value.trim(), category: byId("eventCategory").value,
-        desc: byId("eventDescription").value.trim(), notes: byId("eventNotes").value.trim()
+        desc: byId("eventDescription").value.trim(), notes: byId("eventNotes").value.trim(),
+        eventEnd: eventEndTimestamp(date, time)
       };
       if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return;
       try {
@@ -703,7 +768,8 @@
       formEvent.preventDefault();
       const event = state.events.find(item => item.id === state.selectedEventId);
       const link = safePhotoUrl(byId("photoUrl").value.trim());
-      if (state.role !== "originals" || !event || !link || !link.startsWith("https://")) { setStatus("Photo albums must use a valid https:// link."); return; }
+      if (state.role !== "originals" || !event || !eventIsCompleted(event) || !link || !link.startsWith("https://")) { setStatus("Only Originals Heads can add valid https:// photo links after the event is complete."); return; }
+      if (Array.isArray(event.photoLinks) && event.photoLinks.includes(link)) { setStatus("That photo album link is already listed."); return; }
       try {
         await updateDoc(doc(state.db, "events", event.id), { photoLinks: arrayUnion(link) });
         byId("photoUrl").value = ""; setStatus("Photo album link added.", false);
