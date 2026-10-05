@@ -22,6 +22,16 @@ service cloud.firestore {
     function isClub() { return signedIn() && role() == 'club'; }
     function isManager() { return signedIn() && role() == 'manager'; }
 
+    // Dean view-only link: an anonymous sign-in that presented the current secret key.
+    // Resetting the key in /secrets/dean cancels every old link.
+    function isViewer() {
+      let session = /databases/$(database)/documents/viewerSessions/$(request.auth.uid);
+      return signedIn() &&
+        request.auth.token.firebase.sign_in_provider == 'anonymous' &&
+        exists(session) &&
+        get(session).data.key == get(/databases/$(database)/documents/secrets/dean).data.key;
+    }
+
     function stampedByMe(field) {
       return request.resource.data.uid == request.auth.uid &&
         request.resource.data.by == myName() &&
@@ -71,7 +81,7 @@ service cloud.firestore {
 
     // Append-only history of About (desc) edits. Field names kept as oldNotes/newNotes.
     match /noteLogs/{logId} {
-      allow read: if isGensec() || isClub();
+      allow read: if isGensec() || isClub() || isViewer();
       allow create: if (isGensec() || isClub()) &&
         request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'oldNotes', 'newNotes', 'by', 'uid', 'at']) &&
         request.resource.data.eventId is string &&
@@ -83,7 +93,7 @@ service cloud.firestore {
 
     // Club suggestions (date changes, event changes, concerns).
     match /suggestions/{suggestionId} {
-      allow read: if isGensec() || isClub();
+      allow read: if isGensec() || isClub() || isViewer();
       allow create: if isClub() &&
         request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'type', 'proposedDate', 'message', 'by', 'uid', 'status', 'createdAt']) &&
         request.resource.data.type in ['date', 'event', 'other'] &&
@@ -97,9 +107,9 @@ service cloud.firestore {
       allow delete: if isGensec();
     }
 
-    // Bills: Google Drive links filed under an event. Only GenSec and managers can see them.
+    // Bills: Google Drive links filed under an event. Only GenSec, managers and the Dean link can see them.
     match /bills/{billId} {
-      allow read: if isGensec() || isManager();
+      allow read: if isGensec() || isManager() || isViewer();
       allow create: if isManager() &&
         request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'label', 'link', 'kind', 'amount', 'by', 'uid', 'createdAt']) &&
         shortString(request.resource.data.label, 140) &&
@@ -110,6 +120,21 @@ service cloud.firestore {
         stampedByMe('createdAt');
       allow update: if false;
       allow delete: if isGensec();
+    }
+
+    // Secret key behind the Dean's view-only link. Only the General Secretary can read or reset it.
+    match /secrets/{secretId} {
+      allow read, write: if isGensec();
+    }
+
+    match /viewerSessions/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid &&
+        request.auth.token.firebase.sign_in_provider == 'anonymous' &&
+        request.resource.data.keys().hasOnly(['key', 'createdAt']) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.key == get(/databases/$(database)/documents/secrets/dean).data.key;
+      allow delete: if false;
     }
 
     match /roles/{uid} {

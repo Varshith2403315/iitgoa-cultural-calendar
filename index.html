@@ -342,6 +342,7 @@
         <span class="role-badge" id="roleBadge" aria-live="polite"></span>
         <button class="button" id="loginButton" type="button">Organiser login</button>
         <button class="button secondary" id="logoutButton" type="button" hidden>Log out</button>
+        <button class="button secondary" id="deanLinkButton" type="button" hidden>Dean link</button>
         <button class="button" id="addEventButton" type="button" hidden>＋ Add event</button>
       </div>
     </div>
@@ -408,7 +409,7 @@
     </section>
 
     <section class="view" id="billsView" role="tabpanel" aria-labelledby="billsTab" hidden>
-      <div class="panel-heading"><h2>Bills</h2><p>One folder per event. Visible only to the General Secretary and council managers.</p></div>
+      <div class="panel-heading"><h2>Bills</h2><p>One folder per event. Visible only to the General Secretary, council managers and the Dean.</p></div>
       <form class="bill-form" id="billForm" hidden>
         <div class="form-grid">
           <div class="field wide"><label for="billEvent">Event folder</label><select id="billEvent" required></select></div>
@@ -504,6 +505,19 @@
     </div>
   </dialog>
 
+  <dialog id="deanDialog" aria-labelledby="deanHeading">
+    <div class="dialog-header"><h2 id="deanHeading">Dean's view-only link</h2><button class="icon-button" type="button" data-close="deanDialog" aria-label="Close">×</button></div>
+    <div class="dialog-content">
+      <p>Anyone who opens this link sees the calendar, Suggestions, About log and Bills without logging in. They can't change anything. Share it only with the Dean.</p>
+      <div class="field"><label for="deanLinkField">Link</label><input id="deanLinkField" type="text" readonly></div>
+      <p class="inline-status" id="deanLinkStatus" role="status"></p>
+      <div class="dialog-form-actions">
+        <button class="button secondary small" id="resetDeanLink" type="button">Create new link (cancels old one)</button>
+        <button class="button small" id="copyDeanLink" type="button">Copy link</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="deleteDialog" aria-labelledby="deleteHeading">
     <div class="dialog-header"><h2 id="deleteHeading">Delete this event?</h2><button class="icon-button" type="button" data-close="deleteDialog" aria-label="Close delete confirmation">×</button></div>
     <div class="dialog-content"><p id="deletePrompt">This event will be removed from the calendar.</p></div>
@@ -520,8 +534,8 @@
     };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion, Timestamp, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion, Timestamp, writeBatch, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     // Organisers can sign in with a plain username (e.g. "Meraki"); it maps to this email domain.
     const USERNAME_DOMAIN = "iit-goa-cultural-calendar.firebaseapp.com";
 
@@ -1087,11 +1101,11 @@
       state.logs = []; state.suggestions = []; state.bills = [];
       const watch = (name, key, render) => state.roleUnsubs.push(onSnapshot(collection(state.db, name), snapshot => {
         state[key] = snapshot.docs.map(item => ({ id: item.id, ...item.data() })); render();
-      }, error => { console.error(`Could not load ${name}`, error); setStatus(`Could not load ${name}: ${error.message}`); }));
-      if (state.role === "gensec" || state.role === "club") { watch("suggestions", "suggestions", renderSuggestions); watch("noteLogs", "logs", renderLogs); }
-      if (state.role === "gensec" || state.role === "manager") watch("bills", "bills", renderBills);
-      byId("suggestionsTab").hidden = byId("logTab").hidden = !(state.role === "gensec" || state.role === "club");
-      byId("billsTab").hidden = !(state.role === "gensec" || state.role === "manager");
+      }, error => { console.error(`Could not load ${name}`, error); setStatus(state.role === "viewer" ? "This view-only link is no longer active. Ask the General Secretary for a new one." : `Could not load ${name}: ${error.message}`); }));
+      if (["gensec", "club", "viewer"].includes(state.role)) { watch("suggestions", "suggestions", renderSuggestions); watch("noteLogs", "logs", renderLogs); }
+      if (["gensec", "manager", "viewer"].includes(state.role)) watch("bills", "bills", renderBills);
+      byId("suggestionsTab").hidden = byId("logTab").hidden = !["gensec", "club", "viewer"].includes(state.role);
+      byId("billsTab").hidden = !["gensec", "manager", "viewer"].includes(state.role);
       renderSuggestions(); renderLogs(); renderBills();
       if (byId(`${state.activeTab}Tab`).hidden) setActiveTab("calendar");
     }
@@ -1116,7 +1130,7 @@
       state.unsubscribeEvents?.();
       state.unsubscribeEvents = onSnapshot(collection(state.db, "events"), snapshot => {
         state.events = snapshot.docs.map(document => ({ id: document.id, ...document.data() }));
-        state.loadFailed = false; state.hasLoaded = true; setStatus(""); renderFilters();
+        state.loadFailed = false; state.hasLoaded = true; setStatus(state.linkError || ""); renderFilters();
         if (state.selectedEventId && byId("eventDialog").open) {
           const selectedEvent = state.events.find(event => event.id === state.selectedEventId);
           if (selectedEvent) renderDetails(selectedEvent);
@@ -1130,7 +1144,12 @@
     }
     async function updateRole(user) {
       state.user = user; state.role = null; state.roleName = "";
-      if (user) {
+      if (user?.isAnonymous) {
+        try {
+          const session = await getDoc(doc(state.db, "viewerSessions", user.uid));
+          if (session.exists()) { state.role = "viewer"; state.roleName = "Dean"; }
+        } catch (error) { console.error("Could not read the view-only session", error); }
+      } else if (user) {
         try {
           const roleDocument = await getDoc(doc(state.db, "roles", user.uid));
           const data = roleDocument.exists() ? roleDocument.data() : {};
@@ -1141,15 +1160,52 @@
         } catch (error) { setStatus(`Signed in, but the organiser role could not be read: ${error.message}`); }
       }
       const badge = byId("roleBadge");
-      badge.textContent = { gensec: "General Secretary", originals: "Originals Head", club: `${state.roleName} · Club`, manager: `${state.roleName} · Manager` }[state.role] || "Signed in · no organiser role";
+      badge.textContent = { gensec: "General Secretary", originals: "Originals Head", club: `${state.roleName} · Club`, manager: `${state.roleName} · Manager`, viewer: "Dean · View only" }[state.role] || (user?.isAnonymous ? "Link not active" : "Signed in · no organiser role");
       badge.classList.toggle("visible", Boolean(user));
-      byId("loginButton").hidden = Boolean(user); byId("logoutButton").hidden = !user;
+      byId("loginButton").hidden = Boolean(user) && !(user.isAnonymous && !state.role); byId("logoutButton").hidden = !user || (user.isAnonymous && !state.role);
+      byId("logoutButton").textContent = user?.isAnonymous ? "Exit view" : "Log out";
+      byId("deanLinkButton").hidden = state.role !== "gensec";
       byId("addEventButton").hidden = state.role !== "gensec";
       subscribeRoleData();
       if (state.selectedEventId && byId("eventDialog").open) {
         const event = state.events.find(item => item.id === state.selectedEventId); if (event) renderDetails(event);
       }
     }
+    // ---- Dean view-only link (#dean=KEY) ----
+    function readDeanKey() {
+      const match = location.hash.match(/(?:^#|&)dean=([A-Za-z0-9_-]{20,})/);
+      if (match) history.replaceState(null, "", location.pathname + location.search);
+      return match ? match[1] : "";
+    }
+    async function openDeanLink(key) {
+      try {
+        await state.auth.authStateReady();
+        if (state.auth.currentUser && !state.auth.currentUser.isAnonymous) return;
+        const credential = state.auth.currentUser || (await signInAnonymously(state.auth)).user;
+        await setDoc(doc(state.db, "viewerSessions", credential.uid), { key, createdAt: serverTimestamp() });
+      } catch (error) {
+        console.error("View-only link failed", error);
+        state.linkError = "This view-only link is not valid any more. Ask the General Secretary for a new one.";
+        setStatus(state.linkError);
+      }
+    }
+    function newDeanKey() {
+      const bytes = crypto.getRandomValues(new Uint8Array(24));
+      return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+    const deanUrl = key => `${location.origin}${location.pathname}#dean=${key}`;
+    async function showDeanLink(reset = false) {
+      if (state.role !== "gensec") return;
+      inlineStatus("deanLinkStatus", "");
+      if (!byId("deanDialog").open) byId("deanDialog").showModal();
+      try {
+        const ref = doc(state.db, "secrets", "dean");
+        let key = reset ? "" : ((await getDoc(ref)).data()?.key || "");
+        if (!key) { key = newDeanKey(); await setDoc(ref, { key, updatedAt: serverTimestamp() }); if (reset) inlineStatus("deanLinkStatus", "New link created. The old link no longer works.", true); }
+        byId("deanLinkField").value = deanUrl(key);
+      } catch (error) { inlineStatus("deanLinkStatus", `Could not load the link: ${error.message}`); }
+    }
+
     function initFirebase() {
       const hasPlaceholder = Object.values(firebaseConfig).some(value => value.startsWith("YOUR_"));
       if (hasPlaceholder) {
@@ -1161,7 +1217,9 @@
       try {
         const app = initializeApp(firebaseConfig); state.auth = getAuth(app); state.db = getFirestore(app);
         subscribeToEvents();
-        onAuthStateChanged(state.auth, async user => { await updateRole(user); renderAll(); });
+        const deanKey = readDeanKey();
+        state.linkPending = deanKey ? openDeanLink(deanKey) : Promise.resolve();
+        onAuthStateChanged(state.auth, async user => { await state.linkPending; await updateRole(user); renderAll(); });
       } catch (error) {
         console.error("Firebase initialization failed", error);
         setStatus("Could not load events. Check the Firebase config.");
@@ -1206,6 +1264,13 @@
       byId("eventDialog").close(); byId("deleteDialog").showModal();
     });
     byId("confirmDelete").addEventListener("click", confirmDelete);
+    byId("deanLinkButton").addEventListener("click", () => showDeanLink(false));
+    byId("resetDeanLink").addEventListener("click", () => { if (window.confirm("Create a new link? The current link will stop working.")) showDeanLink(true); });
+    byId("copyDeanLink").addEventListener("click", async () => {
+      const field = byId("deanLinkField"); if (!field.value) return;
+      try { await navigator.clipboard.writeText(field.value); } catch { field.select(); document.execCommand("copy"); }
+      inlineStatus("deanLinkStatus", "Link copied.", true);
+    });
     byId("downloadIcs").addEventListener("click", downloadCalendarFile);
     byId("jumpNextButton").addEventListener("click", () => {
       const next = state.filtered.findIndex(event => eventIsUpcoming(event));
