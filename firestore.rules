@@ -67,11 +67,16 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks']) &&
         appendsHttpsPhotoLink()
       ) || (
-        // Clubs may only change the About text (desc), and must sign the change.
+        // Clubs may edit everything except the date, and must sign the change.
         isClub() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['desc', 'descUpdatedBy', 'descUpdatedAt', 'notes']) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'time', 'venue', 'category', 'desc', 'notes', 'eventEnd', 'descUpdatedBy', 'descUpdatedAt']) &&
         // Old separate notes get merged into About, so clubs may only clear that field.
         request.resource.data.get('notes', '') in [resource.data.get('notes', ''), ''] &&
+        shortString(request.resource.data.title, 140) && request.resource.data.title.size() > 0 &&
+        shortString(request.resource.data.venue, 140) && request.resource.data.venue.size() > 0 &&
+        request.resource.data.category in ['dance', 'music', 'drama', 'art', 'literary', 'fest', 'other'] &&
+        request.resource.data.time is string && request.resource.data.time.matches('^([0-9]{2}:[0-9]{2})?$') &&
+        (request.resource.data.eventEnd == null || request.resource.data.eventEnd is timestamp) &&
         shortString(request.resource.data.desc, 3000) &&
         request.resource.data.desc.size() > 0 &&
         request.resource.data.descUpdatedBy == myName() &&
@@ -79,7 +84,7 @@ service cloud.firestore {
       );
     }
 
-    // Append-only history of About (desc) edits. Field names kept as oldNotes/newNotes.
+    // Append-only history of event edits. oldNotes/newNotes hold the changed fields before and after.
     match /noteLogs/{logId} {
       allow read: if isGensec() || isClub() || isViewer();
       allow create: if (isGensec() || isClub()) &&
@@ -96,7 +101,7 @@ service cloud.firestore {
       allow read: if isGensec() || isClub() || isViewer();
       allow create: if isClub() &&
         request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'type', 'proposedDate', 'message', 'by', 'uid', 'status', 'createdAt']) &&
-        request.resource.data.type in ['date', 'event', 'other'] &&
+        request.resource.data.type in ['date', 'new', 'event', 'other'] &&
         request.resource.data.status == 'open' &&
         shortString(request.resource.data.message, 1000) &&
         request.resource.data.message.size() > 0 &&

@@ -367,7 +367,7 @@
       <button class="tab-button" id="calendarTab" type="button" role="tab" aria-selected="true" aria-controls="calendarView">Monthly calendar</button>
       <button class="tab-button" id="timelineTab" type="button" role="tab" aria-selected="false" aria-controls="timelineView">3D timeline</button>
       <button class="tab-button" id="suggestionsTab" type="button" role="tab" aria-selected="false" aria-controls="suggestionsView" hidden>Suggestions</button>
-      <button class="tab-button" id="logTab" type="button" role="tab" aria-selected="false" aria-controls="logView" hidden>About log</button>
+      <button class="tab-button" id="logTab" type="button" role="tab" aria-selected="false" aria-controls="logView" hidden>Edit log</button>
       <button class="tab-button" id="billsTab" type="button" role="tab" aria-selected="false" aria-controls="billsView" hidden>Bills</button>
     </div>
 
@@ -404,7 +404,7 @@
     </section>
 
     <section class="view" id="logView" role="tabpanel" aria-labelledby="logTab" hidden>
-      <div class="panel-heading"><h2>About edit history</h2><p>Every change to an event's About text, newest first.</p></div>
+      <div class="panel-heading"><h2>Event edit history</h2><p>Every change to an event, who made it and when, newest first.</p></div>
       <div class="card-list" id="logList"></div>
     </section>
 
@@ -449,17 +449,10 @@
       </div>
       <div id="clubTools" hidden>
         <hr class="section-rule">
-        <form class="tool-block" id="clubNotesForm">
-          <h3>Edit About</h3>
-          <div class="field"><label for="clubNotes">About this event</label><textarea id="clubNotes" maxlength="3000" required></textarea><small class="field-help">Visible to everyone. Your club name and the time are recorded in the About log.</small></div>
-          <p class="inline-status" id="clubNotesStatus" role="status"></p>
-          <div class="dialog-form-actions"><button class="button small" type="submit">Save About</button></div>
-        </form>
-        <hr class="section-rule">
         <form class="tool-block" id="suggestionForm">
           <h3>Raise a suggestion</h3>
           <div class="form-grid">
-            <div class="field"><label for="suggestionType">Type</label><select id="suggestionType"><option value="date">Date change</option><option value="event">Event change</option><option value="other">Other concern</option></select></div>
+            <div class="field"><label for="suggestionType">Type</label><select id="suggestionType"><option value="date">Date change</option><option value="new">New event idea</option><option value="other">Other concern</option></select></div>
             <div class="field" id="proposedDateField"><label for="proposedDate">Proposed date</label><input id="proposedDate" type="date"></div>
             <div class="field wide"><label for="suggestionMessage">Details</label><textarea id="suggestionMessage" maxlength="1000" required placeholder="What should change and why?"></textarea></div>
           </div>
@@ -482,7 +475,7 @@
       <form id="eventForm">
         <div class="form-grid">
           <div class="field wide"><label for="eventTitle">Event title</label><input id="eventTitle" type="text" maxlength="140" required></div>
-          <div class="field"><label for="eventDate">Date</label><input id="eventDate" type="date" required></div>
+          <div class="field"><label for="eventDate">Date</label><input id="eventDate" type="date" required><small class="field-help" id="dateLockedHelp" hidden>Only the General Secretary can change the date. Use “Raise a suggestion” instead.</small></div>
           <div class="field"><label for="eventHour">Start time (optional)</label><div class="time-picker"><select id="eventHour" aria-label="Hour"><option value="">--</option></select><select id="eventMinute" aria-label="Minute"></select><select id="eventMeridiem" aria-label="AM or PM"><option value="AM">AM</option><option value="PM">PM</option></select></div><small class="field-help">Leave the hour as “--” to show “Time to be announced”.</small></div>
           <div class="field wide"><label for="eventVenue">Venue</label><input id="eventVenue" type="text" maxlength="140" required></div>
           <div class="field wide"><label for="eventCategory">Category</label><select id="eventCategory" required></select></div>
@@ -855,7 +848,7 @@
         anchor.textContent = `Photo album ${photoList.children.length + 1}`; photoList.append(anchor);
       });
       byId("photoField").hidden = photoList.children.length === 0;
-      byId("editEvent").hidden = state.role !== "gensec";
+      byId("editEvent").hidden = !["gensec", "club"].includes(state.role);
       byId("deleteEvent").hidden = state.role !== "gensec";
       byId("originalsPhotoTools").hidden = state.role !== "originals";
       const photoLinkForm = byId("photoLinkForm");
@@ -871,30 +864,25 @@
       byId("clubTools").hidden = !isClub;
       if (isClub && (switchingEvent || !byId("eventDialog").open)) {
         byId("clubTools").dataset.eventId = event.id;
-        byId("clubNotes").value = aboutText(event);
         byId("suggestionForm").reset(); updateSuggestionFields();
-        inlineStatus("clubNotesStatus", ""); inlineStatus("suggestionStatus", "");
+        inlineStatus("suggestionStatus", "");
       }
       if (!byId("eventDialog").open) byId("eventDialog").showModal();
     }
     function updateSuggestionFields() { byId("proposedDateField").hidden = byId("suggestionType").value !== "date"; }
+    function describeChanges(existing, next) {
+      const fields = [["title", "Title"], ["date", "Date", shortDate], ["time", "Time", time => timeLabel(time)], ["venue", "Venue"], ["category", "Category", id => categoryInfo(id).label], ["desc", "About"]];
+      const before = [], after = [];
+      for (const [key, label, show = value => value || "(empty)"] of fields) {
+        if (!(key in next)) continue;
+        const oldValue = key === "desc" ? aboutText(existing) : (existing[key] || "");
+        if ((next[key] || "") === oldValue) continue;
+        before.push(`${label}: ${show(oldValue)}`); after.push(`${label}: ${show(next[key] || "")}`);
+      }
+      return { before, after };
+    }
     function noteLogData(event, oldNotes, newNotes) {
       return { eventId: event.id, eventTitle: event.title, eventDate: event.date, oldNotes, newNotes, by: state.roleName, uid: state.user.uid, at: serverTimestamp() };
-    }
-    async function saveClubNotes(formEvent) {
-      formEvent.preventDefault();
-      const event = state.events.find(item => item.id === state.selectedEventId);
-      if (state.role !== "club" || !event) return;
-      const desc = byId("clubNotes").value.trim();
-      if (!desc) { inlineStatus("clubNotesStatus", "The About text can't be empty."); return; }
-      if (desc === aboutText(event)) { inlineStatus("clubNotesStatus", "No changes to save."); return; }
-      try {
-        const batch = writeBatch(state.db);
-        batch.update(doc(state.db, "events", event.id), { desc, notes: "", descUpdatedBy: state.roleName, descUpdatedAt: serverTimestamp() });
-        batch.set(doc(collection(state.db, "noteLogs")), noteLogData(event, aboutText(event), desc));
-        await batch.commit();
-        inlineStatus("clubNotesStatus", "About saved and logged.", true);
-      } catch (error) { inlineStatus("clubNotesStatus", `Could not save: ${error.message}`); }
     }
     async function sendSuggestion(formEvent) {
       formEvent.preventDefault();
@@ -933,8 +921,10 @@
     }
 
     function openEventForm(event = null) {
-      if (state.role !== "gensec") return;
+      const isClub = state.role === "club";
+      if (state.role !== "gensec" && !(isClub && event)) return;
       state.editingEventId = event?.id || null;
+      byId("eventDate").disabled = isClub; byId("dateLockedHelp").hidden = !isClub;
       byId("formHeading").textContent = event ? "Edit event" : "Add an event";
       byId("eventTitle").value = event?.title || "";
       byId("eventDate").value = event?.date || "";
@@ -945,8 +935,11 @@
       byId("eventFormDialog").showModal();
     }
     async function saveEvent(formEvent) {
-      formEvent.preventDefault(); if (state.role !== "gensec") return;
-      const date = byId("eventDate").value; const time = readTimePicker();
+      formEvent.preventDefault();
+      const isClub = state.role === "club";
+      const existing = state.editingEventId ? state.events.find(item => item.id === state.editingEventId) : null;
+      if (state.role !== "gensec" && !(isClub && existing)) return;
+      const date = isClub ? existing.date : byId("eventDate").value; const time = readTimePicker();
       const eventData = {
         title: byId("eventTitle").value.trim(), date, time,
         venue: byId("eventVenue").value.trim(), category: byId("eventCategory").value,
@@ -955,15 +948,15 @@
       };
       if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || (time && !/^\d{2}:\d{2}$/.test(time))) return;
       try {
-        const existing = state.editingEventId ? state.events.find(item => item.id === state.editingEventId) : null;
         const eventRef = existing ? doc(state.db, "events", existing.id) : doc(collection(state.db, "events"));
-        const oldDesc = existing ? aboutText(existing) : "";
-        const descChanged = eventData.desc !== oldDesc;
-        if (descChanged) Object.assign(eventData, { descUpdatedBy: state.roleName, descUpdatedAt: serverTimestamp() });
+        if (isClub) delete eventData.date;
+        const changes = existing ? describeChanges(existing, eventData) : null;
+        if (existing && !changes.before.length) { byId("eventFormDialog").close(); setStatus("No changes to save.", false); return; }
+        if (existing) Object.assign(eventData, { descUpdatedBy: state.roleName, descUpdatedAt: serverTimestamp() });
         const batch = writeBatch(state.db);
         if (existing) batch.update(eventRef, eventData);
         else batch.set(eventRef, { ...eventData, photoLinks: [] });
-        if (descChanged) batch.set(doc(collection(state.db, "noteLogs")), noteLogData({ id: eventRef.id, title: eventData.title, date: eventData.date }, oldDesc, eventData.desc));
+        if (existing) batch.set(doc(collection(state.db, "noteLogs")), noteLogData({ id: eventRef.id, title: eventData.title, date: existing.date }, changes.before.join("\n"), changes.after.join("\n")));
         await batch.commit();
         byId("eventFormDialog").close(); setStatus("Event saved.", false);
       } catch (error) { setStatus(`Could not save the event: ${error.message}`); }
@@ -989,10 +982,10 @@
 
     function el(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; }
     function emptyNote(text) { return el("p", "empty-inline", text); }
-    const suggestionTypes = { date: "Date change", event: "Event change", other: "Other concern" };
+    const suggestionTypes = { date: "Date change", new: "New event idea", event: "Event change", other: "Other concern" };
     function renderSuggestions() {
       const list = byId("suggestionsList"); list.replaceChildren();
-      byId("suggestionsHint").textContent = state.role === "gensec" ? "Date changes and event ideas raised by club accounts. Accepting does not edit the event; update it yourself." : "Open an event and use “Raise a suggestion”. Everything clubs have sent is listed here.";
+      byId("suggestionsHint").textContent = state.role === "gensec" ? "Date changes and event ideas raised by club accounts. Accepting does not edit the event; update it yourself." : "To change a date or propose a new event, open any event and use “Raise a suggestion”. Everything clubs have sent is listed here.";
       const items = [...state.suggestions].sort((a, b) => stampMillis(b.createdAt) - stampMillis(a.createdAt));
       if (!items.length) { list.append(emptyNote("No suggestions yet.")); return; }
       for (const item of items) {
@@ -1024,7 +1017,7 @@
     function renderLogs() {
       const list = byId("logList"); list.replaceChildren();
       const items = [...state.logs].sort((a, b) => stampMillis(b.at) - stampMillis(a.at));
-      if (!items.length) { list.append(emptyNote("No About text has been edited yet.")); return; }
+      if (!items.length) { list.append(emptyNote("No events have been edited yet.")); return; }
       for (const item of items) {
         const card = el("article", "info-card");
         card.append(el("h3", "", item.eventTitle || "Event"), el("p", "info-meta", `Edited by ${item.by} · ${formatStamp(item.at)} · event on ${shortDate(item.eventDate)}`));
@@ -1239,7 +1232,6 @@
     byId("suggestionsTab").addEventListener("click", () => setActiveTab("suggestions"));
     byId("logTab").addEventListener("click", () => setActiveTab("log"));
     byId("billsTab").addEventListener("click", () => setActiveTab("bills"));
-    byId("clubNotesForm").addEventListener("submit", saveClubNotes);
     byId("suggestionForm").addEventListener("submit", sendSuggestion);
     byId("suggestionType").addEventListener("change", updateSuggestionFields);
     byId("billForm").addEventListener("submit", addBill);
