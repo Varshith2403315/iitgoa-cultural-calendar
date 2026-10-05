@@ -232,6 +232,34 @@
     .field.wide { grid-column: 1 / -1; }
     .dialog-form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
     .field-help { display: block; margin-top: 4px; color: var(--muted); font-size: .74rem; }
+    .time-picker { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+    .edited-by { margin: 6px 0 0; color: var(--muted); font-size: .76rem; font-weight: 600; }
+    .tool-block { margin-top: 4px; }
+    .tool-block h3 { margin: 0 0 8px; font: 700 1.05rem var(--display); }
+    .inline-status { min-height: 1.2em; margin: 6px 0 0; font-size: .82rem; font-weight: 700; color: var(--accent-deep); }
+    .inline-status[data-ok="true"] { color: #2f6b3a; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 4px 0 13px; }
+    .panel-heading h2 { margin: 0; font: 700 1.45rem/1.1 var(--display); }
+    .panel-heading p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .card-list { display: grid; gap: 10px; }
+    .info-card { padding: 13px 14px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--paper-light); }
+    .info-card h3 { margin: 0 0 4px; font: 700 1.05rem var(--display); }
+    .info-meta { margin: 0; color: var(--muted); font-size: .8rem; }
+    .info-body { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .info-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .pill { display: inline-block; padding: 2px 8px; border: 1.5px solid var(--ink); border-radius: 999px; font-size: .72rem; font-weight: 700; background: #fff; }
+    .pill.open { background: #fdf0c8; } .pill.accepted { background: #d8efd9; } .pill.declined { background: #f6d9d4; }
+    .log-diff { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .log-diff div { padding: 8px; border: 1px dashed #647468; border-radius: 3px; background: #fffdf6; font-size: .86rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .log-diff b { display: block; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }
+    .bill-form { margin-bottom: 18px; padding: 14px; border: 2px solid var(--ink); border-radius: 3px; background: var(--paper-light); box-shadow: var(--shadow); }
+    .folder { border: 1.5px solid var(--ink); border-radius: 3px; background: var(--paper-light); }
+    .folder summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; font-weight: 700; }
+    .folder summary::before { content: ""; width: 20px; height: 14px; flex: none; border: 2px solid var(--ink); border-radius: 2px 2px 3px 3px; background: var(--accent); box-shadow: inset 0 3px 0 #fff6; }
+    .folder summary small { margin-left: auto; color: var(--muted); font-weight: 600; }
+    .folder-files { display: grid; gap: 8px; padding: 0 14px 14px; }
+    .file-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 9px 10px; border: 1px solid #b8c4cf; border-radius: 3px; background: #fff; }
+    .file-row a { color: #164d9c; font-weight: 700; overflow-wrap: anywhere; }
     .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     @media (max-width: 760px) {
       .shell { width: min(100% - 28px, 620px); }
@@ -267,6 +295,9 @@
       .detail-field.wide, .field.wide { grid-column: auto; }
       .dialog-header, .dialog-content, .dialog-footer { padding-inline: 15px; }
       .photo-form { grid-template-columns: 1fr; }
+      .log-diff { grid-template-columns: 1fr; }
+      .tabs { overflow-x: auto; }
+      .tab-button { white-space: nowrap; }
       .timeline-runway { min-height: 550px; }
       .timeline-stage { min-height: 550px; }
       .timeline-card { width: 82vw; padding: 17px; }
@@ -310,6 +341,9 @@
     <div class="tabs" role="tablist" aria-label="Calendar views">
       <button class="tab-button" id="calendarTab" type="button" role="tab" aria-selected="true" aria-controls="calendarView">Monthly calendar</button>
       <button class="tab-button" id="timelineTab" type="button" role="tab" aria-selected="false" aria-controls="timelineView">3D timeline</button>
+      <button class="tab-button" id="suggestionsTab" type="button" role="tab" aria-selected="false" aria-controls="suggestionsView" hidden>Suggestions</button>
+      <button class="tab-button" id="logTab" type="button" role="tab" aria-selected="false" aria-controls="logView" hidden>Notes log</button>
+      <button class="tab-button" id="billsTab" type="button" role="tab" aria-selected="false" aria-controls="billsView" hidden>Bills</button>
     </div>
 
     <section class="view" id="calendarView" role="tabpanel" aria-labelledby="calendarTab">
@@ -345,6 +379,32 @@
         </div>
       </div>
     </section>
+
+    <section class="view" id="suggestionsView" role="tabpanel" aria-labelledby="suggestionsTab" hidden>
+      <div class="panel-heading"><h2>Suggestions from clubs</h2><p id="suggestionsHint">Date changes and event ideas raised by club accounts.</p></div>
+      <div class="card-list" id="suggestionsList"></div>
+    </section>
+
+    <section class="view" id="logView" role="tabpanel" aria-labelledby="logTab" hidden>
+      <div class="panel-heading"><h2>Notes edit history</h2><p>Every change to an event's notes, newest first.</p></div>
+      <div class="card-list" id="logList"></div>
+    </section>
+
+    <section class="view" id="billsView" role="tabpanel" aria-labelledby="billsTab" hidden>
+      <div class="panel-heading"><h2>Bills</h2><p>One folder per event. Visible only to the General Secretary and council managers.</p></div>
+      <form class="bill-form" id="billForm" hidden>
+        <div class="form-grid">
+          <div class="field wide"><label for="billEvent">Event folder</label><select id="billEvent" required></select></div>
+          <div class="field wide"><label for="billLabel">Bill description</label><input id="billLabel" type="text" maxlength="140" placeholder="e.g. Sound system rental invoice" required></div>
+          <div class="field wide"><label for="billLink">Google Drive link to the PDF or image</label><input id="billLink" type="url" placeholder="https://drive.google.com/…" required><small class="field-help">Upload the file to Google Drive first, then share it with the General Secretary's Google account and paste the link here.</small></div>
+          <div class="field"><label for="billKind">File type</label><select id="billKind"><option value="PDF">PDF</option><option value="Image">Image</option></select></div>
+          <div class="field"><label for="billAmount">Amount in ₹ (optional)</label><input id="billAmount" type="number" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <p class="inline-status" id="billStatus" role="status"></p>
+        <div class="dialog-form-actions"><button class="button" type="submit">Add bill</button></div>
+      </form>
+      <div class="card-list" id="billFolders"></div>
+    </section>
     <p class="footer-note">A shared calendar for the IIT Goa campus community.</p>
   </main>
 
@@ -357,7 +417,7 @@
         <div class="detail-field"><p class="detail-label">Time</p><p class="detail-value" id="detailTime"></p></div>
         <div class="detail-field wide"><p class="detail-label">Venue</p><p class="detail-value" id="detailVenue"></p></div>
         <div class="detail-field wide"><p class="detail-label">About</p><p class="detail-value" id="detailDescription"></p></div>
-        <div class="detail-field wide" id="notesField"><p class="detail-label">Notes</p><p class="detail-value" id="detailNotes"></p></div>
+        <div class="detail-field wide" id="notesField"><p class="detail-label">Notes</p><p class="detail-value" id="detailNotes"></p><p class="edited-by" id="notesEditedBy" hidden></p></div>
         <div class="detail-field wide" id="photoField"><p class="detail-label">Photo albums</p><div class="photo-list" id="photoList"></div></div>
       </div>
       <div id="originalsPhotoTools" hidden>
@@ -366,6 +426,26 @@
         <form class="photo-form" id="photoLinkForm">
           <div class="field"><label for="photoUrl">Add a photo album link</label><input id="photoUrl" type="url" placeholder="https://…" pattern="https://.*" required><small class="field-help">Use a secure https:// link.</small></div>
           <button class="button small" type="submit">Add link</button>
+        </form>
+      </div>
+      <div id="clubTools" hidden>
+        <hr class="section-rule">
+        <form class="tool-block" id="clubNotesForm">
+          <h3>Edit notes</h3>
+          <div class="field"><label for="clubNotes">Public notes</label><textarea id="clubNotes" maxlength="2000"></textarea><small class="field-help">Visible to everyone. Your club name and the time are recorded in the notes log.</small></div>
+          <p class="inline-status" id="clubNotesStatus" role="status"></p>
+          <div class="dialog-form-actions"><button class="button small" type="submit">Save notes</button></div>
+        </form>
+        <hr class="section-rule">
+        <form class="tool-block" id="suggestionForm">
+          <h3>Raise a suggestion</h3>
+          <div class="form-grid">
+            <div class="field"><label for="suggestionType">Type</label><select id="suggestionType"><option value="date">Date change</option><option value="event">Event change</option><option value="other">Other concern</option></select></div>
+            <div class="field" id="proposedDateField"><label for="proposedDate">Proposed date</label><input id="proposedDate" type="date"></div>
+            <div class="field wide"><label for="suggestionMessage">Details</label><textarea id="suggestionMessage" maxlength="1000" required placeholder="What should change and why?"></textarea></div>
+          </div>
+          <p class="inline-status" id="suggestionStatus" role="status"></p>
+          <div class="dialog-form-actions"><button class="button small" type="submit">Send to General Secretary</button></div>
         </form>
       </div>
     </div>
@@ -384,7 +464,7 @@
         <div class="form-grid">
           <div class="field wide"><label for="eventTitle">Event title</label><input id="eventTitle" type="text" maxlength="140" required></div>
           <div class="field"><label for="eventDate">Date</label><input id="eventDate" type="date" required></div>
-          <div class="field"><label for="eventTime">Start time (optional)</label><input id="eventTime" type="time"><small class="field-help">Leave blank to show “Time to be announced”.</small></div>
+          <div class="field"><label for="eventHour">Start time (optional)</label><div class="time-picker"><select id="eventHour" aria-label="Hour"><option value="">--</option></select><select id="eventMinute" aria-label="Minute"></select><select id="eventMeridiem" aria-label="AM or PM"><option value="AM">AM</option><option value="PM">PM</option></select></div><small class="field-help">Leave the hour as “--” to show “Time to be announced”.</small></div>
           <div class="field wide"><label for="eventVenue">Venue</label><input id="eventVenue" type="text" maxlength="140" required></div>
           <div class="field wide"><label for="eventCategory">Category</label><select id="eventCategory" required></select></div>
           <div class="field wide"><label for="eventDescription">Description</label><textarea id="eventDescription" maxlength="3000" required></textarea></div>
@@ -399,7 +479,7 @@
     <div class="dialog-header"><h2 id="loginHeading">Organiser login</h2><button class="icon-button" type="button" data-close="loginDialog" aria-label="Close login form">×</button></div>
     <div class="dialog-content">
       <form id="loginForm" class="form-grid">
-        <div class="field wide"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+        <div class="field wide"><label for="loginEmail">Username or email</label><input id="loginEmail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
         <div class="field wide"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
         <div id="loginError" class="field wide" role="alert"></div>
         <div class="field wide dialog-form-actions"><button class="button secondary" type="button" data-close="loginDialog">Cancel</button><button class="button" type="submit">Sign in</button></div>
@@ -424,7 +504,9 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, arrayUnion, Timestamp, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // Organisers can sign in with a plain username (e.g. "Meraki"); it maps to this email domain.
+    const USERNAME_DOMAIN = "iit-goa-cultural-calendar.firebaseapp.com";
 
     const categories = [
       { id: "dance", label: "Dance", color: "var(--dance)" },
@@ -438,8 +520,8 @@
     const categoryById = new Map(categories.map(category => [category.id, category]));
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const state = {
-      auth: null, db: null, user: null, role: null, events: [], filtered: [],
-        auth: null, db: null, user: null, role: null, events: [], filtered: [], hasLoaded: false,
+      auth: null, db: null, user: null, role: null, roleName: "", events: [], filtered: [], hasLoaded: false,
+      logs: [], suggestions: [], bills: [], roleUnsubs: [], activeTab: "calendar",
       month: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       selectedDate: toDateKey(new Date()), selectedEventId: null, editingEventId: null,
       category: "", timelineIndex: 0, timelineVisited: false, unsubscribeEvents: null, frame: 0, loadFailed: false
@@ -473,6 +555,38 @@
       try { const url = new URL(value); return url.protocol === "https:" ? url.href : null; }
       catch { return null; }
     }
+    function formatTime(time) {
+      if (!/^\d{2}:\d{2}$/.test(time || "")) return "";
+      const [hours, minutes] = time.split(":").map(Number);
+      return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${hours < 12 ? "AM" : "PM"}`;
+    }
+    const timeLabel = (time, fallback = "Time to be announced") => formatTime(time) || fallback;
+    function formatStamp(stamp) {
+      const date = stamp?.toDate ? stamp.toDate() : null;
+      return date ? date.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }) : "just now";
+    }
+    const stampMillis = stamp => stamp?.toMillis ? stamp.toMillis() : Date.now();
+    const shortDate = key => key ? new Date(`${key}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
+    function buildTimePicker() {
+      for (let hour = 1; hour <= 12; hour++) { const option = document.createElement("option"); option.value = String(hour); option.textContent = String(hour); byId("eventHour").append(option); }
+      for (let minute = 0; minute < 60; minute += 5) { const option = document.createElement("option"); option.value = String(minute).padStart(2, "0"); option.textContent = option.value; byId("eventMinute").append(option); }
+    }
+    function setTimePicker(time) {
+      const minuteSelect = byId("eventMinute");
+      [...minuteSelect.querySelectorAll("[data-extra]")].forEach(option => option.remove());
+      if (!/^\d{2}:\d{2}$/.test(time || "")) { byId("eventHour").value = ""; minuteSelect.value = "00"; byId("eventMeridiem").value = "PM"; return; }
+      const [hours, minutes] = time.split(":");
+      if (![...minuteSelect.options].some(option => option.value === minutes)) {
+        const option = document.createElement("option"); option.value = minutes; option.textContent = minutes; option.dataset.extra = "true"; minuteSelect.append(option);
+      }
+      byId("eventHour").value = String(Number(hours) % 12 || 12); minuteSelect.value = minutes; byId("eventMeridiem").value = Number(hours) < 12 ? "AM" : "PM";
+    }
+    function readTimePicker() {
+      const hour = Number(byId("eventHour").value); if (!hour) return "";
+      const hours24 = (hour % 12) + (byId("eventMeridiem").value === "PM" ? 12 : 0);
+      return `${String(hours24).padStart(2, "0")}:${byId("eventMinute").value}`;
+    }
+    function inlineStatus(id, message, ok = false) { const target = byId(id); target.textContent = message; target.dataset.ok = String(ok); }
     function escapeIcs(value) { return String(value ?? "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;"); }
 
     function buildFilters() {
@@ -514,7 +628,7 @@
       const dot = document.createElement("span"); dot.className = "event-dot"; dot.style.setProperty("--category", categoryInfo(event.category).color); dot.setAttribute("aria-hidden", "true");
       const text = document.createElement("span");
       const title = document.createElement("strong"); title.textContent = event.title;
-      const meta = document.createElement("small"); meta.textContent = `${event.time || "Time to be announced"} · ${event.venue || "Venue to be announced"}`;
+      const meta = document.createElement("small"); meta.textContent = `${timeLabel(event.time)} · ${event.venue || "Venue to be announced"}`;
       text.append(title, meta); button.append(dot, text);
       button.addEventListener("click", () => showEventDetails(event.id));
       return button;
@@ -606,7 +720,7 @@
         const small = document.createElement("small"); small.textContent = "days · -- hours"; byId("countdown").append(small); return;
       }
       byId("nextTitle").textContent = next.title;
-      const nextTime = next.time || "Time to be announced";
+      const nextTime = timeLabel(next.time);
       byId("nextMeta").textContent = `${parseEventDate(next).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · ${nextTime} · ${next.venue}`;
       if (!next.time) {
         byId("countdown").replaceChildren(document.createTextNode("TBA"));
@@ -621,14 +735,14 @@
     function createTicket(event, index) {
       const card = document.createElement("button"); card.type = "button"; card.className = "timeline-card";
       card.style.setProperty("--category", categoryInfo(event.category).color);
-      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${event.time || "time to be announced"}, ${event.venue}. Open event details.`);
+      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${timeLabel(event.time, "time to be announced")}, ${event.venue}. Open event details.`);
       const date = parseEventDate(event);
       const dateWrap = document.createElement("div"); dateWrap.className = "ticket-date";
       const day = document.createElement("span"); day.className = "ticket-day"; day.textContent = String(date.getDate());
       const month = document.createElement("span"); month.className = "ticket-month"; month.textContent = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }); dateWrap.append(day, month);
       const title = document.createElement("h3"); title.className = "ticket-title"; title.textContent = event.title;
       const venue = document.createElement("p"); venue.className = "ticket-details"; venue.textContent = `⌖ ${event.venue}`;
-      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${event.time || "Time to be announced"}`;
+      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${timeLabel(event.time)}`;
       const tag = document.createElement("span"); tag.className = "category-tag"; tag.textContent = categoryInfo(event.category).label;
       card.append(dateWrap, title, venue, time, tag);
       card.addEventListener("click", () => showEventDetails(event.id));
@@ -707,7 +821,7 @@
       byId("detailCategory").textContent = category.label;
       byId("detailCategory").style.setProperty("--category", category.color);
       byId("detailDate").textContent = new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-      byId("detailTime").textContent = event.time || "To be announced";
+      byId("detailTime").textContent = timeLabel(event.time, "To be announced");
       byId("detailVenue").textContent = event.venue || "To be announced";
       byId("detailDescription").textContent = event.desc || "No description provided.";
       byId("detailNotes").textContent = event.notes || "No additional notes.";
@@ -726,7 +840,52 @@
       byId("photoAccessNote").textContent = event.eventEnd
         ? eventIsCompleted(event) ? "This event is complete. Add its photo album links below." : "Photo album links unlock two hours after the scheduled start."
         : "This older event needs a General Secretary to save it once before photo links can be added.";
-      byId("eventDialog").showModal();
+      const editedBy = byId("notesEditedBy");
+      editedBy.hidden = !event.notesUpdatedBy;
+      editedBy.textContent = event.notesUpdatedBy ? `Last edited by ${event.notesUpdatedBy} · ${formatStamp(event.notesUpdatedAt)}` : "";
+      const isClub = state.role === "club";
+      const switchingEvent = byId("clubTools").dataset.eventId !== event.id;
+      byId("clubTools").hidden = !isClub;
+      if (isClub && (switchingEvent || !byId("eventDialog").open)) {
+        byId("clubTools").dataset.eventId = event.id;
+        byId("clubNotes").value = event.notes || "";
+        byId("suggestionForm").reset(); updateSuggestionFields();
+        inlineStatus("clubNotesStatus", ""); inlineStatus("suggestionStatus", "");
+      }
+      if (!byId("eventDialog").open) byId("eventDialog").showModal();
+    }
+    function updateSuggestionFields() { byId("proposedDateField").hidden = byId("suggestionType").value !== "date"; }
+    function noteLogData(event, oldNotes, newNotes) {
+      return { eventId: event.id, eventTitle: event.title, eventDate: event.date, oldNotes, newNotes, by: state.roleName, uid: state.user.uid, at: serverTimestamp() };
+    }
+    async function saveClubNotes(formEvent) {
+      formEvent.preventDefault();
+      const event = state.events.find(item => item.id === state.selectedEventId);
+      if (state.role !== "club" || !event) return;
+      const notes = byId("clubNotes").value.trim();
+      if (notes === (event.notes || "")) { inlineStatus("clubNotesStatus", "No changes to save."); return; }
+      try {
+        const batch = writeBatch(state.db);
+        batch.update(doc(state.db, "events", event.id), { notes, notesUpdatedBy: state.roleName, notesUpdatedAt: serverTimestamp() });
+        batch.set(doc(collection(state.db, "noteLogs")), noteLogData(event, event.notes || "", notes));
+        await batch.commit();
+        inlineStatus("clubNotesStatus", "Notes saved and logged.", true);
+      } catch (error) { inlineStatus("clubNotesStatus", `Could not save notes: ${error.message}`); }
+    }
+    async function sendSuggestion(formEvent) {
+      formEvent.preventDefault();
+      const event = state.events.find(item => item.id === state.selectedEventId);
+      if (state.role !== "club" || !event) return;
+      const type = byId("suggestionType").value;
+      const proposedDate = type === "date" ? byId("proposedDate").value : "";
+      const message = byId("suggestionMessage").value.trim();
+      if (type === "date" && !proposedDate) { inlineStatus("suggestionStatus", "Pick the date you would like instead."); return; }
+      if (!message) { inlineStatus("suggestionStatus", "Add a few details for the General Secretary."); return; }
+      try {
+        await addDoc(collection(state.db, "suggestions"), { eventId: event.id, eventTitle: event.title, eventDate: event.date, type, proposedDate, message, by: state.roleName, uid: state.user.uid, status: "open", createdAt: serverTimestamp() });
+        byId("suggestionForm").reset(); updateSuggestionFields();
+        inlineStatus("suggestionStatus", "Sent. The General Secretary will see it in the Suggestions tab.", true);
+      } catch (error) { inlineStatus("suggestionStatus", `Could not send: ${error.message}`); }
     }
     function showEventDetails(id) {
       const event = state.events.find(item => item.id === id); if (!event) return;
@@ -755,7 +914,7 @@
       byId("formHeading").textContent = event ? "Edit event" : "Add an event";
       byId("eventTitle").value = event?.title || "";
       byId("eventDate").value = event?.date || "";
-      byId("eventTime").value = event?.time || "";
+      setTimePicker(event?.time || "");
       byId("eventVenue").value = event?.venue || "";
       byId("eventCategory").value = event?.category || "";
       byId("eventDescription").value = event?.desc || "";
@@ -765,7 +924,7 @@
     }
     async function saveEvent(formEvent) {
       formEvent.preventDefault(); if (state.role !== "gensec") return;
-      const date = byId("eventDate").value; const time = byId("eventTime").value;
+      const date = byId("eventDate").value; const time = readTimePicker();
       const eventData = {
         title: byId("eventTitle").value.trim(), date, time,
         venue: byId("eventVenue").value.trim(), category: byId("eventCategory").value,
@@ -774,8 +933,16 @@
       };
       if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || (time && !/^\d{2}:\d{2}$/.test(time))) return;
       try {
-        if (state.editingEventId) await updateDoc(doc(state.db, "events", state.editingEventId), eventData);
-        else await addDoc(collection(state.db, "events"), { ...eventData, photoLinks: [] });
+        const existing = state.editingEventId ? state.events.find(item => item.id === state.editingEventId) : null;
+        const eventRef = existing ? doc(state.db, "events", existing.id) : doc(collection(state.db, "events"));
+        const oldNotes = existing?.notes || "";
+        const notesChanged = eventData.notes !== oldNotes;
+        if (notesChanged) Object.assign(eventData, { notesUpdatedBy: state.roleName, notesUpdatedAt: serverTimestamp() });
+        const batch = writeBatch(state.db);
+        if (existing) batch.update(eventRef, eventData);
+        else batch.set(eventRef, { ...eventData, photoLinks: [] });
+        if (notesChanged) batch.set(doc(collection(state.db, "noteLogs")), noteLogData({ id: eventRef.id, title: eventData.title, date: eventData.date }, oldNotes, eventData.notes));
+        await batch.commit();
         byId("eventFormDialog").close(); setStatus("Event saved.", false);
       } catch (error) { setStatus(`Could not save the event: ${error.message}`); }
     }
@@ -798,13 +965,138 @@
       } catch (error) { setStatus(`Could not delete the event: ${error.message}`); }
     }
 
-    function renderAll() { renderCalendar(); renderTimeline(); renderNextUp(); }
+    function el(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; }
+    function emptyNote(text) { return el("p", "empty-inline", text); }
+    const suggestionTypes = { date: "Date change", event: "Event change", other: "Other concern" };
+    function renderSuggestions() {
+      const list = byId("suggestionsList"); list.replaceChildren();
+      byId("suggestionsHint").textContent = state.role === "gensec" ? "Date changes and event ideas raised by club accounts. Accepting does not edit the event; update it yourself." : "Open an event and use “Raise a suggestion”. Everything clubs have sent is listed here.";
+      const items = [...state.suggestions].sort((a, b) => stampMillis(b.createdAt) - stampMillis(a.createdAt));
+      if (!items.length) { list.append(emptyNote("No suggestions yet.")); return; }
+      for (const item of items) {
+        const card = el("article", "info-card");
+        const heading = el("h3", "", item.eventTitle || "Event");
+        const status = el("span", `pill ${item.status}`, item.status === "open" ? "Open" : item.status === "accepted" ? "Accepted" : "Declined");
+        const meta = el("p", "info-meta", `${suggestionTypes[item.type] || "Suggestion"} · from ${item.by} · ${formatStamp(item.createdAt)} · event on ${shortDate(item.eventDate)}`);
+        card.append(heading, status, meta);
+        if (item.type === "date" && item.proposedDate) card.append(el("p", "info-body", `Proposed date: ${shortDate(item.proposedDate)}`));
+        card.append(el("p", "info-body", item.message));
+        const actions = el("div", "info-actions");
+        if (state.events.some(event => event.id === item.eventId)) {
+          const open = el("button", "button secondary small", "Open event"); open.type = "button"; open.addEventListener("click", () => showEventDetails(item.eventId)); actions.append(open);
+        }
+        if (state.role === "gensec") {
+          for (const [value, label] of [["accepted", "Mark accepted"], ["declined", "Mark declined"], ["open", "Reopen"]]) {
+            if (item.status === value) continue;
+            const button = el("button", "button secondary small", label); button.type = "button";
+            button.addEventListener("click", async () => {
+              try { await updateDoc(doc(state.db, "suggestions", item.id), { status: value, resolvedAt: serverTimestamp() }); }
+              catch (error) { setStatus(`Could not update the suggestion: ${error.message}`); }
+            });
+            actions.append(button);
+          }
+        }
+        card.append(actions); list.append(card);
+      }
+    }
+    function renderLogs() {
+      const list = byId("logList"); list.replaceChildren();
+      const items = [...state.logs].sort((a, b) => stampMillis(b.at) - stampMillis(a.at));
+      if (!items.length) { list.append(emptyNote("No notes have been edited yet.")); return; }
+      for (const item of items) {
+        const card = el("article", "info-card");
+        card.append(el("h3", "", item.eventTitle || "Event"), el("p", "info-meta", `Edited by ${item.by} · ${formatStamp(item.at)} · event on ${shortDate(item.eventDate)}`));
+        const diff = el("div", "log-diff");
+        const before = el("div"); before.append(el("b", "", "Before"), document.createTextNode(item.oldNotes || "(empty)"));
+        const after = el("div"); after.append(el("b", "", "After"), document.createTextNode(item.newNotes || "(empty)"));
+        diff.append(before, after); card.append(diff); list.append(card);
+      }
+    }
+    function renderBillEventOptions() {
+      const select = byId("billEvent"); const current = select.value; select.replaceChildren();
+      const placeholder = el("option", "", "Choose an event"); placeholder.value = ""; select.append(placeholder);
+      for (const event of sortedEvents(state.events).reverse()) {
+        const option = el("option", "", `${event.title} · ${shortDate(event.date)}`); option.value = event.id; select.append(option);
+      }
+      select.value = current;
+    }
+    function renderBills() {
+      byId("billForm").hidden = state.role !== "manager";
+      if (state.role === "manager") renderBillEventOptions();
+      const container = byId("billFolders"); container.replaceChildren();
+      if (!state.bills.length) { container.append(emptyNote("No bills submitted yet.")); return; }
+      const folders = new Map();
+      for (const bill of state.bills) {
+        if (!folders.has(bill.eventId)) folders.set(bill.eventId, []);
+        folders.get(bill.eventId).push(bill);
+      }
+      const ordered = [...folders.entries()].sort((a, b) => (b[1][0].eventDate || "").localeCompare(a[1][0].eventDate || ""));
+      for (const [eventId, bills] of ordered) {
+        const event = state.events.find(item => item.id === eventId);
+        const folder = el("details", "folder");
+        const summary = el("summary");
+        const total = bills.reduce((sum, bill) => sum + (typeof bill.amount === "number" ? bill.amount : 0), 0);
+        summary.append(el("span", "", `${event?.title || bills[0].eventTitle || "Event"} · ${shortDate(event?.date || bills[0].eventDate)}`), el("small", "", `${bills.length} file${bills.length === 1 ? "" : "s"}${total ? ` · ₹${total.toLocaleString("en-IN")}` : ""}`));
+        const files = el("div", "folder-files");
+        for (const bill of bills.sort((a, b) => stampMillis(b.createdAt) - stampMillis(a.createdAt))) {
+          const row = el("div", "file-row");
+          const info = el("div");
+          const link = el("a", "", `${bill.kind === "Image" ? "Image" : "PDF"} · ${bill.label}`);
+          const safe = safePhotoUrl(bill.link); if (safe) { link.href = safe; link.target = "_blank"; link.rel = "noopener noreferrer"; }
+          info.append(link, el("p", "info-meta", `Added by ${bill.by} · ${formatStamp(bill.createdAt)}${typeof bill.amount === "number" ? ` · ₹${bill.amount.toLocaleString("en-IN")}` : ""}`));
+          row.append(info);
+          if (state.role === "gensec") {
+            const remove = el("button", "button danger small", "Remove"); remove.type = "button";
+            remove.addEventListener("click", async () => {
+              if (!window.confirm(`Remove “${bill.label}” from this folder? The Drive file itself is not deleted.`)) return;
+              try { await deleteDoc(doc(state.db, "bills", bill.id)); } catch (error) { setStatus(`Could not remove the bill: ${error.message}`); }
+            });
+            row.append(remove);
+          }
+          files.append(row);
+        }
+        folder.append(summary, files); container.append(folder);
+      }
+    }
+    async function addBill(formEvent) {
+      formEvent.preventDefault();
+      if (state.role !== "manager") return;
+      const event = state.events.find(item => item.id === byId("billEvent").value);
+      const link = byId("billLink").value.trim();
+      const label = byId("billLabel").value.trim();
+      const amountText = byId("billAmount").value.trim();
+      if (!event) { inlineStatus("billStatus", "Choose the event this bill belongs to."); return; }
+      if (!/^https:\/\/(drive|docs)\.google\.com\/.+/.test(link)) { inlineStatus("billStatus", "Paste a Google Drive link that starts with https://drive.google.com/ or https://docs.google.com/."); return; }
+      if (!label) { inlineStatus("billStatus", "Describe the bill."); return; }
+      try {
+        await addDoc(collection(state.db, "bills"), { eventId: event.id, eventTitle: event.title, eventDate: event.date, label, link, kind: byId("billKind").value, amount: amountText ? Number(amountText) : null, by: state.roleName, uid: state.user.uid, createdAt: serverTimestamp() });
+        const keepEvent = byId("billEvent").value; byId("billForm").reset(); byId("billEvent").value = keepEvent;
+        inlineStatus("billStatus", "Bill added to the event folder.", true);
+      } catch (error) { inlineStatus("billStatus", `Could not add the bill: ${error.message}`); }
+    }
+    function subscribeRoleData() {
+      state.roleUnsubs.forEach(unsubscribe => unsubscribe()); state.roleUnsubs = [];
+      state.logs = []; state.suggestions = []; state.bills = [];
+      const watch = (name, key, render) => state.roleUnsubs.push(onSnapshot(collection(state.db, name), snapshot => {
+        state[key] = snapshot.docs.map(item => ({ id: item.id, ...item.data() })); render();
+      }, error => { console.error(`Could not load ${name}`, error); setStatus(`Could not load ${name}: ${error.message}`); }));
+      if (state.role === "gensec" || state.role === "club") { watch("suggestions", "suggestions", renderSuggestions); watch("noteLogs", "logs", renderLogs); }
+      if (state.role === "gensec" || state.role === "manager") watch("bills", "bills", renderBills);
+      byId("suggestionsTab").hidden = byId("logTab").hidden = !(state.role === "gensec" || state.role === "club");
+      byId("billsTab").hidden = !(state.role === "gensec" || state.role === "manager");
+      renderSuggestions(); renderLogs(); renderBills();
+      if (byId(`${state.activeTab}Tab`).hidden) setActiveTab("calendar");
+    }
+
+    function renderAll() { renderCalendar(); renderTimeline(); renderNextUp(); if (state.role === "manager") renderBillEventOptions(); }
+    const tabNames = ["calendar", "timeline", "suggestions", "log", "bills"];
     function setActiveTab(tab) {
-      const calendarActive = tab === "calendar";
-      byId("calendarTab").setAttribute("aria-selected", String(calendarActive));
-      byId("timelineTab").setAttribute("aria-selected", String(!calendarActive));
-      byId("calendarView").hidden = !calendarActive; byId("timelineView").hidden = calendarActive;
-      if (!calendarActive) {
+      state.activeTab = tab;
+      for (const name of tabNames) {
+        byId(`${name}Tab`).setAttribute("aria-selected", String(name === tab));
+        byId(`${name}View`).hidden = name !== tab;
+      }
+      if (tab === "timeline") {
         if (!state.timelineVisited) {
           state.timelineVisited = true;
           const nextIndex = state.filtered.findIndex(event => eventIsUpcoming(event));
@@ -829,19 +1121,23 @@
       });
     }
     async function updateRole(user) {
-      state.user = user; state.role = null;
+      state.user = user; state.role = null; state.roleName = "";
       if (user) {
         try {
           const roleDocument = await getDoc(doc(state.db, "roles", user.uid));
-          const role = roleDocument.exists() ? roleDocument.data().role : null;
-          if (role === "gensec" || role === "originals") state.role = role;
+          const data = roleDocument.exists() ? roleDocument.data() : {};
+          if (["gensec", "originals", "club", "manager"].includes(data.role)) {
+            state.role = data.role;
+            state.roleName = typeof data.name === "string" && data.name.trim() ? data.name : data.role;
+          }
         } catch (error) { setStatus(`Signed in, but the organiser role could not be read: ${error.message}`); }
       }
       const badge = byId("roleBadge");
-      badge.textContent = state.role === "gensec" ? "General Secretary" : state.role === "originals" ? "Originals Head" : "Signed in · no organiser role";
+      badge.textContent = { gensec: "General Secretary", originals: "Originals Head", club: `${state.roleName} · Club`, manager: `${state.roleName} · Manager` }[state.role] || "Signed in · no organiser role";
       badge.classList.toggle("visible", Boolean(user));
       byId("loginButton").hidden = Boolean(user); byId("logoutButton").hidden = !user;
       byId("addEventButton").hidden = state.role !== "gensec";
+      subscribeRoleData();
       if (state.selectedEventId && byId("eventDialog").open) {
         const event = state.events.find(item => item.id === state.selectedEventId); if (event) renderDetails(event);
       }
@@ -865,6 +1161,7 @@
     }
 
     buildFilters();
+    buildTimePicker();
     renderAll();
     byId("searchInput").addEventListener("input", renderFilters);
     byId("categorySelect").addEventListener("change", event => { state.category = event.target.value; renderFilters(); });
@@ -873,15 +1170,24 @@
     byId("todayButton").addEventListener("click", () => { const now = new Date(); state.month = new Date(now.getFullYear(), now.getMonth(), 1); state.selectedDate = toDateKey(now); renderCalendar(); });
     byId("calendarTab").addEventListener("click", () => setActiveTab("calendar"));
     byId("timelineTab").addEventListener("click", () => setActiveTab("timeline"));
+    byId("suggestionsTab").addEventListener("click", () => setActiveTab("suggestions"));
+    byId("logTab").addEventListener("click", () => setActiveTab("log"));
+    byId("billsTab").addEventListener("click", () => setActiveTab("bills"));
+    byId("clubNotesForm").addEventListener("submit", saveClubNotes);
+    byId("suggestionForm").addEventListener("submit", sendSuggestion);
+    byId("suggestionType").addEventListener("change", updateSuggestionFields);
+    byId("billForm").addEventListener("submit", addBill);
     byId("addEventButton").addEventListener("click", () => openEventForm());
     byId("loginButton").addEventListener("click", () => byId("loginDialog").showModal());
     byId("logoutButton").addEventListener("click", async () => { try { await signOut(state.auth); } catch (error) { setStatus(`Could not sign out: ${error.message}`); } });
     byId("loginForm").addEventListener("submit", async event => {
       event.preventDefault(); byId("loginError").textContent = "";
       try {
-        await signInWithEmailAndPassword(state.auth, byId("loginEmail").value.trim(), byId("loginPassword").value);
+        const login = byId("loginEmail").value.trim();
+        const email = login.includes("@") ? login : `${login.toLowerCase().replace(/\s+/g, "_")}@${USERNAME_DOMAIN}`;
+        await signInWithEmailAndPassword(state.auth, email, byId("loginPassword").value);
         byId("loginDialog").close(); byId("loginForm").reset();
-      } catch (error) { byId("loginError").textContent = "Sign-in failed. Check the email, password, and Firebase Auth setup."; }
+      } catch (error) { byId("loginError").textContent = "Sign-in failed. Check the username or email, password, and Firebase Auth setup."; }
     });
     byId("eventForm").addEventListener("submit", saveEvent);
     byId("photoLinkForm").addEventListener("submit", addPhotoLink);

@@ -5,8 +5,31 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function roleData() {
+      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data;
+    }
+
     function role() {
-      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role;
+      return roleData().role;
+    }
+
+    // Display name stored on the role document (falls back to the role string).
+    function myName() {
+      return roleData().get('name', roleData().role);
+    }
+
+    function isGensec() { return signedIn() && role() == 'gensec'; }
+    function isClub() { return signedIn() && role() == 'club'; }
+    function isManager() { return signedIn() && role() == 'manager'; }
+
+    function stampedByMe(field) {
+      return request.resource.data.uid == request.auth.uid &&
+        request.resource.data.by == myName() &&
+        request.resource.data[field] == request.time;
+    }
+
+    function shortString(value, max) {
+      return value is string && value.size() <= max;
     }
 
     match /events/{eventId} {
@@ -23,20 +46,67 @@ service cloud.firestore {
 
       allow read: if true;
 
-      allow create: if signedIn() && role() == 'gensec';
+      allow create: if isGensec();
 
-      allow delete: if signedIn() && role() == 'gensec';
+      allow delete: if isGensec();
 
-      allow update: if signedIn() && (
-        role() == 'gensec' ||
-        (
-          role() == 'originals' &&
-          resource.data.eventEnd is timestamp &&
-          resource.data.eventEnd < request.time &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks']) &&
-          appendsHttpsPhotoLink()
-        )
+      allow update: if isGensec() || (
+        role() == 'originals' &&
+        resource.data.eventEnd is timestamp &&
+        resource.data.eventEnd < request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks']) &&
+        appendsHttpsPhotoLink()
+      ) || (
+        // Clubs may only change the notes, and must sign the change.
+        isClub() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notes', 'notesUpdatedBy', 'notesUpdatedAt']) &&
+        shortString(request.resource.data.notes, 2000) &&
+        request.resource.data.notesUpdatedBy == myName() &&
+        request.resource.data.notesUpdatedAt == request.time
       );
+    }
+
+    // Append-only history of notes edits.
+    match /noteLogs/{logId} {
+      allow read: if isGensec() || isClub();
+      allow create: if (isGensec() || isClub()) &&
+        request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'oldNotes', 'newNotes', 'by', 'uid', 'at']) &&
+        request.resource.data.eventId is string &&
+        shortString(request.resource.data.oldNotes, 2000) &&
+        shortString(request.resource.data.newNotes, 2000) &&
+        stampedByMe('at');
+      allow update, delete: if false;
+    }
+
+    // Club suggestions (date changes, event changes, concerns).
+    match /suggestions/{suggestionId} {
+      allow read: if isGensec() || isClub();
+      allow create: if isClub() &&
+        request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'type', 'proposedDate', 'message', 'by', 'uid', 'status', 'createdAt']) &&
+        request.resource.data.type in ['date', 'event', 'other'] &&
+        request.resource.data.status == 'open' &&
+        shortString(request.resource.data.message, 1000) &&
+        request.resource.data.message.size() > 0 &&
+        stampedByMe('createdAt');
+      allow update: if isGensec() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolvedAt']) &&
+        request.resource.data.status in ['open', 'accepted', 'declined'];
+      allow delete: if isGensec();
+    }
+
+    // Bills: Google Drive links filed under an event. Only GenSec and managers can see them.
+    match /bills/{billId} {
+      allow read: if isGensec() || isManager();
+      allow create: if isManager() &&
+        request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'label', 'link', 'kind', 'amount', 'by', 'uid', 'createdAt']) &&
+        shortString(request.resource.data.label, 140) &&
+        request.resource.data.link is string &&
+        request.resource.data.link.matches('^https://(drive|docs)[.]google[.]com/.+') &&
+        request.resource.data.kind in ['PDF', 'Image'] &&
+        (request.resource.data.amount == null || (request.resource.data.amount is number && request.resource.data.amount >= 0)) &&
+        stampedByMe('createdAt');
+      allow update: if false;
+      allow delete: if isGensec();
     }
 
     match /roles/{uid} {

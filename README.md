@@ -13,6 +13,23 @@ A static, single-page cultural events calendar for the IIT Goa community. It use
 7. For each organiser, find the Authentication user's UID and create a document in the `roles` collection with that UID as the document ID. An Auth user by itself can sign in but has no organiser permissions until this document exists. Set its `role` string to `gensec` for the General Secretary or `originals` for the Originals Head. Do not add client-side role write permissions; create or change these documents through the Firebase console or a trusted admin environment.
 8. Add the site's GitHub Pages hostname (for example, `yourname.github.io`) under **Authentication → Settings → Authorized domains**. Add the repository Pages hostname if it is hosted under a project path; the hostname is still `yourname.github.io`.
 
+## Organiser roles
+
+Each organiser needs an Email/Password user in Firebase Authentication plus a document in the `roles` collection whose ID is that user's UID. Organisers can type either their full email or just a username on the login box. A username such as `Meraki` signs in as `meraki@iit-goa-cultural-calendar.firebaseapp.com`, so create username-style accounts with that email.
+
+| Role document | Who | Can do |
+| --- | --- | --- |
+| `{ role: "gensec", name: "General Secretary" }` | General Secretary | Add, edit and delete events; see suggestions, the notes log and all bills |
+| `{ role: "originals" }` | Originals Head | Add photo album links after an event |
+| `{ role: "club", name: "Meraki" }` | Club accounts (Meraki, Orion, Panache, Qalam) | Edit the notes of any event and raise suggestions; cannot change dates or other fields |
+| `{ role: "manager", name: "Literary Manager" }` | Council managers | Add bill links (Google Drive PDFs or images) to event folders; see all bills |
+
+The `name` field is shown in the notes log, on suggestions and on bills, and Firestore rules check that every log entry, suggestion and bill is signed with the author's own name.
+
+## Bills
+
+Bills are stored as Google Drive links, not uploaded files. The manager uploads the PDF or image to Google Drive, shares it with the General Secretary's Google account, then pastes the link in the Bills tab under the right event. Only the General Secretary and managers can read the `bills` collection.
+
 ## Event data
 
 Create and edit events through the General Secretary account in the website. Each `events/{id}` document has these fields:
