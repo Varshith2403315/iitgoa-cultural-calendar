@@ -151,59 +151,78 @@
     .status-message { margin: 14px 0; padding: 12px 14px; border: 2px solid #943b2f; border-radius: 3px; background: #f9e5dc; color: #6c2d26; font-weight: 600; }
     .status-message:empty { display: none; }
     .status-message[data-kind="loading"] { border-color: #71806d; background: var(--paper-light); color: var(--muted); }
-    .timeline-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .timeline-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .timeline-hint { margin: 0; color: var(--muted); font-size: .86rem; }
-    .timeline-runway { position: relative; height: 100vh; min-height: 600px; }
-    .timeline-stage {
-      position: sticky; top: 0; height: 100vh; max-height: 900px; min-height: 560px; overflow: hidden;
-      perspective: 900px; isolation: isolate; background: linear-gradient(145deg, #f4f5f2 0%, #e3edf5 48%, #c8d9e8 100%);
+    .timeline-progress { position: sticky; top: 0; z-index: 6; height: 5px; margin-bottom: 8px; border-radius: 3px; background: #20344920; overflow: hidden; }
+    .timeline-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transform: scaleX(0); transform-origin: left; transition: transform .1s linear; }
+    .timeline-runway {
+      position: relative; padding: 34px 0 60px; border: 2px solid var(--ink); border-radius: 4px; overflow: hidden;
+      background: radial-gradient(circle at 15% 8%, #f3d77f55 0 120px, transparent 121px), radial-gradient(circle at 88% 40%, #e6bba955 0 160px, transparent 161px),
+        radial-gradient(circle at 10% 78%, #b8cedf88 0 140px, transparent 141px), linear-gradient(160deg, #f8f6ef, #e3edf5 55%, #d3e2ee);
+      box-shadow: var(--shadow); perspective: 1100px;
     }
-    .timeline-stage::before {
-      content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-      background: repeating-linear-gradient(0deg, transparent 0 62px, #344c6314 63px 64px), linear-gradient(112deg, transparent 0 28%, #fffefa88 28.1% 28.25%, transparent 28.35% 69%, #fffefa70 69.1% 69.25%, transparent 69.35%);
+    .timeline-runway::before {
+      content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; transform: translateX(-50%);
+      background: linear-gradient(180deg, var(--accent), var(--accent-deep) 50%, var(--literary)); border-radius: 4px; opacity: .85;
     }
-    .timeline-stage::after {
-      content: ""; position: absolute; z-index: -1; left: -12%; bottom: -37%; width: 124%; height: 64%;
-      pointer-events: none; transform: rotateX(64deg); transform-origin: center top;
-      background: repeating-linear-gradient(0deg, transparent 0 37px, #344c6330 38px 39px), repeating-linear-gradient(90deg, transparent 0 74px, #344c6328 75px 76px), linear-gradient(#e1ebf2, #c0d2e1);
-      border-top: 1px solid #536d8544;
+    .timeline-runway.is-empty::before { display: none; }
+    .tl-month {
+      position: relative; z-index: 3; display: flex; justify-content: center; margin: 22px 0 18px;
     }
-    .parallax-layer { position: absolute; z-index: 0; pointer-events: none; border: 1px solid #ffffffc9; transform-style: preserve-3d; }
-    .parallax-one {
-      top: 11%; left: -8%; width: 44vw; height: 35vh; clip-path: polygon(0 12%, 78% 0, 100% 68%, 22% 100%);
-      background: linear-gradient(135deg, #f4d9c9, #e6bba9); box-shadow: 18px 24px 0 #b96a4d33;
+    .tl-month span {
+      padding: 6px 16px; border: 2px solid var(--ink); border-radius: 999px; background: var(--ink); color: #fffdf6;
+      font: 700 .82rem var(--body); letter-spacing: .08em; text-transform: uppercase; box-shadow: 3px 3px 0 var(--accent);
     }
-    .parallax-two {
-      right: -7%; bottom: 9%; width: 43vw; height: 38vh; clip-path: polygon(20% 0, 100% 19%, 78% 100%, 0 72%);
-      background: linear-gradient(145deg, #dae8f3, #b8cedf); box-shadow: -18px 20px 0 #536f8a44;
+    .tl-row { position: relative; display: grid; grid-template-columns: 1fr 74px 1fr; align-items: center; margin: 0 0 -46px; }
+    .tl-row:has(+ .tl-month), .tl-row:has(+ .tl-end) { margin-bottom: 26px; }
+    .tl-node {
+      grid-column: 2; grid-row: 1; justify-self: center; z-index: 2; width: 58px; height: 58px; display: grid; place-items: center; align-content: center;
+      border: 3px solid var(--ink); border-radius: 50%; background: var(--paper-light); box-shadow: 0 0 0 5px color-mix(in srgb, var(--category) 30%, transparent);
+      line-height: 1; transition: transform .4s cubic-bezier(.2,.9,.3,1.3);
     }
-    .parallax-three {
-      top: 24%; right: 16%; width: 15vw; height: 20vh; clip-path: polygon(50% 0, 100% 28%, 100% 76%, 50% 100%, 0 76%, 0 28%);
-      background: linear-gradient(130deg, #f3d77f, #d6ae45); border: 0;
-    }
-    .timeline-progress { position: absolute; z-index: 5; top: 0; left: 0; width: 100%; height: 5px; background: #1b134025; }
-    .timeline-progress span { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
-    .timeline-spine { position: absolute; z-index: 1; top: 12%; bottom: 12%; left: 50%; width: 1px; background: #829098aa; }
-    .month-marker { position: absolute; top: 12%; left: 50%; z-index: 2; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: .7rem; font-weight: 700; transform: translate(-50%, -50%); }
+    .tl-node b { font: 800 1.35rem var(--display); color: var(--category); }
+    .tl-node small { font-size: .62rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+    .tl-row:hover .tl-node { transform: scale(1.12); }
+    .tl-row.is-next .tl-node { animation: tl-pulse 2s ease-in-out infinite; background: color-mix(in srgb, var(--category) 18%, #fffdf6); }
+    @keyframes tl-pulse { 0%, 100% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--category) 30%, transparent); } 50% { box-shadow: 0 0 0 13px color-mix(in srgb, var(--category) 8%, transparent); } }
     .timeline-card {
-      position: absolute; top: 50%; left: 50%; width: min(440px, 42vw); min-height: 250px; padding: 22px;
-      border: 2px solid var(--ink); border-radius: 3px; background: var(--paper-light); box-shadow: 5px 5px 0 var(--ink);
-      transform-style: preserve-3d; cursor: pointer; will-change: transform, opacity;
+      grid-row: 1; position: relative; width: min(430px, 100%); padding: 18px 20px 16px; border: 2px solid var(--ink); border-radius: 6px;
+      background: var(--paper-light); box-shadow: 6px 6px 0 var(--ink); text-align: left; color: var(--ink); cursor: pointer;
+      transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.8,.2,1), opacity .7s ease, box-shadow .2s ease;
     }
-    .timeline-card::before { content: none; }
-    .ticket-date { display: flex; align-items: baseline; gap: 9px; color: var(--category, var(--accent)); }
-    .ticket-day { font: 800 2.8rem/.95 var(--display); }
-    .ticket-month { color: var(--muted); font-size: .82rem; font-weight: 700; }
-    .ticket-title { margin: 12px 0 7px; font: 700 1.55rem/1.16 var(--display); overflow-wrap: anywhere; }
-    .ticket-details { margin: 4px 0; color: var(--muted); font-size: .9rem; }
+    .timeline-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 7px; border-radius: 4px 4px 0 0; background: var(--category); border-bottom: 2px solid var(--ink); }
+    .timeline-card::after {
+      content: ""; position: absolute; top: 50%; width: 22px; height: 3px; background: var(--ink);
+    }
+    .tl-row.left .timeline-card { grid-column: 1; justify-self: end; }
+    .tl-row.left .timeline-card::after { right: -24px; }
+    .tl-row.right .timeline-card { grid-column: 3; justify-self: start; }
+    .tl-row.right .timeline-card::after { left: -24px; }
+    .tl-row.left .timeline-card:not(.in-view) { opacity: 0; transform: translateX(-60px) rotateY(28deg) scale(.92); }
+    .tl-row.right .timeline-card:not(.in-view) { opacity: 0; transform: translateX(60px) rotateY(-28deg) scale(.92); }
+    .timeline-card.in-view:hover { transform: translateY(-4px) rotateX(4deg); box-shadow: 9px 10px 0 var(--ink); }
+    .tl-row.is-past .timeline-card { background: #f4f2ec; }
+    .tl-row.is-past .timeline-card .ticket-title { color: #4e6276; }
+    .tl-row.is-next .timeline-card { box-shadow: 6px 6px 0 var(--accent-deep); border-color: var(--accent-deep); }
+    .ticket-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
+    .ticket-month { color: var(--muted); font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    .ticket-when { padding: 2px 9px; border-radius: 999px; font-size: .7rem; font-weight: 800; background: #e5eadb; border: 1.5px solid var(--ink); white-space: nowrap; }
+    .is-next .ticket-when { background: var(--accent-deep); color: #fffdf6; }
+    .ticket-title { margin: 10px 0 8px; font: 700 1.4rem/1.16 var(--display); overflow-wrap: anywhere; }
+    .ticket-details { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: var(--muted); font-size: .88rem; }
+    .ticket-details i { width: 20px; height: 20px; flex: none; display: grid; place-items: center; border-radius: 50%; font-style: normal; font-size: .72rem; background: color-mix(in srgb, var(--category) 16%, #fff); color: var(--ink); }
     .category-tag { display: inline-block; margin-top: 11px; padding: 3px 8px; border: 1.5px solid var(--ink); border-radius: 2px; background: color-mix(in srgb, var(--category) 17%, #fffdf6); color: var(--ink); font-size: .74rem; font-weight: 700; }
-    .timeline-card.is-front { z-index: 4; }
-    .timeline-runway.reduced { height: auto !important; min-height: 0; padding: 4px 0; }
-    .timeline-runway.reduced .timeline-stage { position: relative; top: auto; height: auto; max-height: none; min-height: 0; overflow: visible; padding: 22px 14px; perspective: none; background: #e3edf5; }
-    .timeline-runway.reduced .timeline-stage::before, .timeline-runway.reduced .timeline-stage::after { display: none; }
-    .timeline-runway.reduced .timeline-spine, .timeline-runway.reduced .month-marker, .timeline-runway.reduced .timeline-progress { display: none; }
-    .timeline-runway.reduced .timeline-card { position: relative; top: auto; left: auto; width: min(650px, 100%); min-height: 0; margin: 12px auto; opacity: 1 !important; transform: none !important; will-change: auto; }
-    .timeline-runway.reduced .parallax-layer { display: none; }
+    .timeline-empty { position: relative; z-index: 2; margin: 0 20px; }
+    .tl-end { position: relative; z-index: 2; display: flex; justify-content: center; }
+    .tl-end span { padding: 5px 14px; border: 2px dashed var(--ink); border-radius: 999px; background: var(--paper-light); font-size: .78rem; font-weight: 700; color: var(--muted); }
+    .to-top {
+      position: fixed; right: 22px; bottom: 22px; z-index: 50; width: 50px; height: 50px; display: grid; place-items: center;
+      border: 2px solid var(--ink); border-radius: 50%; background: var(--accent-deep); color: #fffdf6; font-size: 1.35rem; font-weight: 800;
+      box-shadow: 3px 3px 0 var(--ink); cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(16px) scale(.9);
+      transition: opacity .25s ease, transform .25s ease, background-color .15s ease;
+    }
+    .to-top.visible { opacity: 1; pointer-events: auto; transform: none; }
+    .to-top:hover { background: #963626; transform: translateY(-2px); }
     .footer-note { margin-top: 22px; color: var(--muted); font-size: .78rem; }
     dialog {
       width: min(620px, calc(100% - 28px)); max-height: min(88vh, 850px); padding: 0; overflow: auto;
@@ -277,8 +296,14 @@
       .day-chip, .more-chip { display: none; }
       .event-dots { display: flex; justify-content: center; flex-wrap: wrap; }
       .event-dot { width: 8px; height: 8px; }
-      .timeline-card { width: min(430px, 76vw); }
-      .timeline-spine { left: 50%; }
+      .timeline-runway::before { left: 33px; }
+      .tl-row, .tl-row:has(+ .tl-month), .tl-row:has(+ .tl-end) { grid-template-columns: 66px 1fr; padding-right: 12px; margin-bottom: 20px; }
+      .tl-node { grid-column: 1; width: 50px; height: 50px; }
+      .tl-row.left .timeline-card, .tl-row.right .timeline-card { grid-column: 2; justify-self: stretch; width: 100%; }
+      .tl-row.left .timeline-card::after, .tl-row.right .timeline-card::after { left: -18px; right: auto; width: 16px; }
+      .tl-row.left .timeline-card:not(.in-view), .tl-row.right .timeline-card:not(.in-view) { transform: translateX(40px) rotateY(-20deg) scale(.95); }
+      .tl-month { justify-content: flex-start; padding-left: 12px; }
+      .to-top { right: 14px; bottom: 14px; width: 46px; height: 46px; }
     }
     @media (max-width: 430px) {
       .shell { width: calc(100% - 22px); }
@@ -298,9 +323,8 @@
       .log-diff { grid-template-columns: 1fr; }
       .tabs { overflow-x: auto; }
       .tab-button { white-space: nowrap; }
-      .timeline-runway { min-height: 550px; }
-      .timeline-stage { min-height: 550px; }
-      .timeline-card { width: 82vw; padding: 17px; }
+      .timeline-card { padding: 16px 15px 14px; }
+      .ticket-title { font-size: 1.2rem; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -364,19 +388,12 @@
 
     <section class="view" id="timelineView" role="tabpanel" aria-labelledby="timelineTab" hidden>
       <div class="timeline-toolbar">
-        <p class="timeline-hint" id="timelineHint">Scroll to travel through the semester. Select a ticket for details.</p>
+        <p class="timeline-hint" id="timelineHint">Scroll through the semester. Select an event for details.</p>
         <button class="button small" id="jumpNextButton" type="button">↓ Jump to next event</button>
       </div>
+      <div class="timeline-progress" aria-hidden="true"><span id="timelineProgress"></span></div>
       <div class="timeline-runway" id="timelineRunway">
-        <div class="timeline-stage" id="timelineStage" aria-label="Scrollable cultural event timeline">
-          <div class="timeline-progress" aria-hidden="true"><span id="timelineProgress"></span></div>
-          <div class="parallax-layer parallax-one" aria-hidden="true"></div>
-          <div class="parallax-layer parallax-two" aria-hidden="true"></div>
-          <div class="parallax-layer parallax-three" aria-hidden="true"></div>
-          <div class="timeline-spine" aria-hidden="true"></div>
-            <div id="monthMarkers" class="month-marker" aria-hidden="true"></div>
-          <div id="timelineCards"></div>
-        </div>
+        <div id="timelineCards" aria-label="Cultural event timeline"></div>
       </div>
     </section>
 
@@ -407,6 +424,8 @@
     </section>
     <p class="footer-note">A shared calendar for the IIT Goa campus community.</p>
   </main>
+
+  <button class="to-top" id="toTopButton" type="button" aria-label="Back to top" title="Back to top">↑</button>
 
   <dialog id="eventDialog" aria-labelledby="detailTitle">
     <div class="dialog-band" id="detailBand"></div>
@@ -732,86 +751,77 @@
       const small = document.createElement("small"); small.textContent = "until it starts"; byId("countdown").append(small);
     }
 
-    function createTicket(event, index) {
-      const card = document.createElement("button"); card.type = "button"; card.className = "timeline-card";
-      card.style.setProperty("--category", categoryInfo(event.category).color);
-      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${timeLabel(event.time, "time to be announced")}, ${event.venue}. Open event details.`);
+    function relativeDay(event, now = new Date()) {
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const days = Math.round((new Date(`${event.date}T00:00:00`) - today) / 86400000);
+      if (days === 0) return "Today"; if (days === 1) return "Tomorrow"; if (days === -1) return "Yesterday";
+      return days > 0 ? `In ${days} days` : `${-days} days ago`;
+    }
+    function createTicket(event, index, flags) {
+      const row = el("div", `tl-row ${index % 2 === 0 ? "left" : "right"}${flags.past ? " is-past" : ""}${flags.next ? " is-next" : ""}`);
+      row.style.setProperty("--category", categoryInfo(event.category).color);
       const date = parseEventDate(event);
-      const dateWrap = document.createElement("div"); dateWrap.className = "ticket-date";
-      const day = document.createElement("span"); day.className = "ticket-day"; day.textContent = String(date.getDate());
-      const month = document.createElement("span"); month.className = "ticket-month"; month.textContent = date.toLocaleDateString("en-US", { month: "short", year: "numeric" }); dateWrap.append(day, month);
-      const title = document.createElement("h3"); title.className = "ticket-title"; title.textContent = event.title;
-      const venue = document.createElement("p"); venue.className = "ticket-details"; venue.textContent = `⌖ ${event.venue}`;
-      const time = document.createElement("p"); time.className = "ticket-details"; time.textContent = `◷ ${timeLabel(event.time)}`;
-      const tag = document.createElement("span"); tag.className = "category-tag"; tag.textContent = categoryInfo(event.category).label;
-      card.append(dateWrap, title, venue, time, tag);
+      const node = el("div", "tl-node"); node.setAttribute("aria-hidden", "true");
+      node.append(el("b", "", String(date.getDate())), el("small", "", date.toLocaleDateString("en-US", { month: "short" })));
+      const card = el("button", "timeline-card"); card.type = "button";
+      card.setAttribute("aria-label", `${event.title}, ${event.date}, ${timeLabel(event.time, "time to be announced")}, ${event.venue}. Open event details.`);
+      const top = el("div", "ticket-top");
+      top.append(el("span", "ticket-month", date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })), el("span", "ticket-when", flags.next ? `Next · ${relativeDay(event)}` : relativeDay(event)));
+      const detail = (icon, text) => { const p = el("p", "ticket-details"); p.append(el("i", "", icon), document.createTextNode(text)); return p; };
+      const tag = el("span", "category-tag", categoryInfo(event.category).label);
+      card.append(top, el("h3", "ticket-title", event.title), detail("◷", timeLabel(event.time)), detail("⌖", event.venue || "Venue to be announced"), tag);
       card.addEventListener("click", () => showEventDetails(event.id));
       card.dataset.index = String(index);
-      return card;
+      row.append(node, card);
+      return row;
     }
+    let timelineObserver = null;
     function renderTimeline() {
       const runway = byId("timelineRunway"); const cards = byId("timelineCards");
-      cards.replaceChildren();
+      cards.replaceChildren(); timelineObserver?.disconnect();
       const events = state.filtered;
-      runway.classList.toggle("reduced", reducedMotion.matches);
-      if (!events.length) { runway.style.height = "auto"; return; }
-      events.forEach((event, index) => cards.append(createTicket(event, index)));
-      const step = Math.max(500, window.innerHeight * .76);
-      runway.style.height = reducedMotion.matches ? "auto" : `${Math.max(1, events.length - 1) * step + window.innerHeight}px`;
-      const nowIndex = events.findIndex(event => eventIsUpcoming(event));
-      state.timelineIndex = nowIndex < 0 ? Math.max(0, events.length - 1) : nowIndex;
+      runway.classList.toggle("is-empty", !events.length);
+      if (!events.length) { cards.append(el("p", "empty-inline timeline-empty", state.hasLoaded ? "No events to show here." : "Loading events…")); return; }
+      const nextIndex = events.findIndex(event => eventIsUpcoming(event));
+      state.timelineIndex = nextIndex < 0 ? events.length - 1 : nextIndex;
+      let lastMonth = "";
+      events.forEach((event, index) => {
+        const monthKey = event.date.slice(0, 7);
+        if (monthKey !== lastMonth) {
+          lastMonth = monthKey;
+          const marker = el("div", "tl-month"); marker.append(el("span", "", new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" }))); cards.append(marker);
+        }
+        cards.append(createTicket(event, index, { past: nextIndex >= 0 ? index < nextIndex : true, next: index === nextIndex }));
+      });
+      const end = el("div", "tl-end"); end.append(el("span", "", "End of the calendar")); cards.append(end);
+      const tickets = [...cards.querySelectorAll(".timeline-card")];
+      if (reducedMotion.matches || !("IntersectionObserver" in window)) { tickets.forEach(card => card.classList.add("in-view")); }
+      else {
+        timelineObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+          if (entry.isIntersecting) { entry.target.classList.add("in-view"); timelineObserver.unobserve(entry.target); }
+        }), { threshold: .15, rootMargin: "0px 0px -40px 0px" });
+        tickets.forEach(card => timelineObserver.observe(card));
+      }
       updateTimeline();
     }
-    function getTimelineStep() { return Math.max(500, window.innerHeight * .76); }
-    function timelinePosition(index) {
-      const runwayTop = byId("timelineRunway").getBoundingClientRect().top + window.scrollY;
-      return runwayTop + index * getTimelineStep();
-    }
     function updateTimeline() {
-      if (reducedMotion.matches) return;
-      const stage = byId("timelineStage"); const runway = byId("timelineRunway");
-      if (!stage || byId("timelineView").hidden || !state.filtered.length) return;
-      const step = getTimelineStep();
-      const relativeScroll = Math.max(0, window.scrollY - timelinePosition(0));
-      const progress = Math.max(0, Math.min(1, relativeScroll / Math.max(1, runway.offsetHeight - stage.offsetHeight)));
+      const runway = byId("timelineRunway");
+      if (byId("timelineView").hidden || !state.filtered.length) return;
+      const rect = runway.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (window.innerHeight * .6 - rect.top) / Math.max(1, rect.height)));
       byId("timelineProgress").style.transform = `scaleX(${progress})`;
-      const centerIndex = Math.max(0, Math.min(state.filtered.length - 1, Math.round(relativeScroll / step)));
-      state.timelineIndex = centerIndex;
-      byId("monthMarkers").textContent = new Date(`${state.filtered[centerIndex].date}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-      const tickets = [...byId("timelineCards").children];
-      tickets.forEach((card, index) => {
-        const distance = (index * step - relativeScroll) / step;
-        const offset = (index - centerIndex) * 18;
-        const side = index % 2 === 0 ? -1 : 1;
-        const x = side * Math.min(140, window.innerWidth * .12) + (index - centerIndex) * 15;
-        const z = Math.max(-700, 480 - Math.abs(distance) * 620);
-        const opacity = Math.max(0, 1 - Math.max(0, Math.abs(distance) - .18) * 1.25);
-        const rotate = side * Math.min(12, Math.abs(distance) * 7);
-        const pitch = Math.sign(distance) * Math.min(7, Math.abs(distance) * 4);
-        card.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${offset}px), ${z}px) rotateY(${rotate}deg) rotateX(${pitch}deg) scale(${Math.max(.82, 1 - Math.abs(distance) * .08)})`;
-        card.style.opacity = String(opacity);
-        card.style.zIndex = String(100 - Math.round(Math.abs(distance) * 10));
-        card.tabIndex = index === centerIndex ? 0 : -1;
-        card.classList.toggle("is-front", index === centerIndex);
-        if (index === centerIndex && document.activeElement?.classList.contains("timeline-card")) card.focus({ preventScroll: true });
-      });
-      const layerShift = relativeScroll * .035;
-      stage.querySelector(".parallax-one").style.transform = `translateY(${-layerShift}px)`;
-      stage.querySelector(".parallax-two").style.transform = `translateY(${layerShift * .62}px)`;
-      stage.querySelector(".parallax-three").style.transform = `translateY(${-layerShift * .34}px)`;
     }
     function jumpToTimeline(index) {
-      if (!state.filtered.length) return;
-      const targetIndex = Math.max(0, Math.min(state.filtered.length - 1, index));
+      const tickets = byId("timelineCards").querySelectorAll(".timeline-card");
+      if (!tickets.length) return;
+      const targetIndex = Math.max(0, Math.min(tickets.length - 1, index));
       state.timelineIndex = targetIndex;
-      if (reducedMotion.matches) {
-        const target = byId("timelineCards").children[targetIndex];
-        target?.scrollIntoView({ behavior: "auto", block: "center" });
-        target?.focus({ preventScroll: true });
-        return;
-      }
-      window.scrollTo({ top: timelinePosition(targetIndex), behavior: reducedMotion.matches ? "auto" : "smooth" });
+      const target = tickets[targetIndex];
+      target.classList.add("in-view");
+      target.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth", block: "center" });
+      target.focus({ preventScroll: true });
     }
+    function updateToTop() { byId("toTopButton").classList.toggle("visible", window.scrollY > 350); }
 
     function renderDetails(event) {
       const category = categoryInfo(event.category);
@@ -1201,19 +1211,16 @@
       const next = state.filtered.findIndex(event => eventIsUpcoming(event));
       jumpToTimeline(next < 0 ? 0 : next);
     });
-    byId("timelineStage").addEventListener("keydown", event => {
-      if (!["ArrowDown", "ArrowUp", "PageDown", "PageUp"].includes(event.key)) return;
+    byId("timelineCards").addEventListener("keydown", event => {
+      if (!["ArrowDown", "ArrowUp"].includes(event.key) || !event.target.classList.contains("timeline-card")) return;
       event.preventDefault();
-      const direction = event.key === "ArrowDown" || event.key === "PageDown" ? 1 : -1;
-      jumpToTimeline(state.timelineIndex + direction);
+      jumpToTimeline(Number(event.target.dataset.index) + (event.key === "ArrowDown" ? 1 : -1));
     });
-    byId("timelineStage").addEventListener("scroll", () => {
-      cancelAnimationFrame(state.frame); state.frame = requestAnimationFrame(updateTimeline);
-    }, { passive: true });
     window.addEventListener("scroll", () => {
-      cancelAnimationFrame(state.frame); state.frame = requestAnimationFrame(updateTimeline);
+      cancelAnimationFrame(state.frame); state.frame = requestAnimationFrame(() => { updateTimeline(); updateToTop(); });
     }, { passive: true });
-    window.addEventListener("resize", () => { renderTimeline(); updateTimeline(); }, { passive: true });
+    byId("toTopButton").addEventListener("click", () => window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" }));
+    window.addEventListener("resize", updateTimeline, { passive: true });
     reducedMotion.addEventListener("change", renderTimeline);
     document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => byId(button.dataset.close).close()));
     document.querySelectorAll("dialog").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
