@@ -57,23 +57,26 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoLinks']) &&
         appendsHttpsPhotoLink()
       ) || (
-        // Clubs may only change the notes, and must sign the change.
+        // Clubs may only change the About text (desc), and must sign the change.
         isClub() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notes', 'notesUpdatedBy', 'notesUpdatedAt']) &&
-        shortString(request.resource.data.notes, 2000) &&
-        request.resource.data.notesUpdatedBy == myName() &&
-        request.resource.data.notesUpdatedAt == request.time
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['desc', 'descUpdatedBy', 'descUpdatedAt', 'notes']) &&
+        // Old separate notes get merged into About, so clubs may only clear that field.
+        request.resource.data.get('notes', '') in [resource.data.get('notes', ''), ''] &&
+        shortString(request.resource.data.desc, 3000) &&
+        request.resource.data.desc.size() > 0 &&
+        request.resource.data.descUpdatedBy == myName() &&
+        request.resource.data.descUpdatedAt == request.time
       );
     }
 
-    // Append-only history of notes edits.
+    // Append-only history of About (desc) edits. Field names kept as oldNotes/newNotes.
     match /noteLogs/{logId} {
       allow read: if isGensec() || isClub();
       allow create: if (isGensec() || isClub()) &&
         request.resource.data.keys().hasOnly(['eventId', 'eventTitle', 'eventDate', 'oldNotes', 'newNotes', 'by', 'uid', 'at']) &&
         request.resource.data.eventId is string &&
-        shortString(request.resource.data.oldNotes, 2000) &&
-        shortString(request.resource.data.newNotes, 2000) &&
+        shortString(request.resource.data.oldNotes, 3000) &&
+        shortString(request.resource.data.newNotes, 3000) &&
         stampedByMe('at');
       allow update, delete: if false;
     }

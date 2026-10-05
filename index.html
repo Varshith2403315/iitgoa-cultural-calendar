@@ -331,7 +331,7 @@
     </section>
 
     <div class="toolbar">
-      <div class="search-wrap"><label for="searchInput">Search events</label><input class="input" id="searchInput" type="search" placeholder="Title, venue, description or notes" autocomplete="off"></div>
+      <div class="search-wrap"><label for="searchInput">Search events</label><input class="input" id="searchInput" type="search" placeholder="Title, venue or description" autocomplete="off"></div>
       <div class="search-wrap"><label for="categorySelect">Category</label><select class="input" id="categorySelect"><option value="">All categories</option></select></div>
     </div>
     <div class="legend-wrap"><p class="legend-title">Browse by category</p><div class="legend" id="categoryLegend" aria-label="Category filters"></div></div>
@@ -342,7 +342,7 @@
       <button class="tab-button" id="calendarTab" type="button" role="tab" aria-selected="true" aria-controls="calendarView">Monthly calendar</button>
       <button class="tab-button" id="timelineTab" type="button" role="tab" aria-selected="false" aria-controls="timelineView">3D timeline</button>
       <button class="tab-button" id="suggestionsTab" type="button" role="tab" aria-selected="false" aria-controls="suggestionsView" hidden>Suggestions</button>
-      <button class="tab-button" id="logTab" type="button" role="tab" aria-selected="false" aria-controls="logView" hidden>Notes log</button>
+      <button class="tab-button" id="logTab" type="button" role="tab" aria-selected="false" aria-controls="logView" hidden>About log</button>
       <button class="tab-button" id="billsTab" type="button" role="tab" aria-selected="false" aria-controls="billsView" hidden>Bills</button>
     </div>
 
@@ -386,7 +386,7 @@
     </section>
 
     <section class="view" id="logView" role="tabpanel" aria-labelledby="logTab" hidden>
-      <div class="panel-heading"><h2>Notes edit history</h2><p>Every change to an event's notes, newest first.</p></div>
+      <div class="panel-heading"><h2>About edit history</h2><p>Every change to an event's About text, newest first.</p></div>
       <div class="card-list" id="logList"></div>
     </section>
 
@@ -416,8 +416,7 @@
         <div class="detail-field"><p class="detail-label">Date</p><p class="detail-value" id="detailDate"></p></div>
         <div class="detail-field"><p class="detail-label">Time</p><p class="detail-value" id="detailTime"></p></div>
         <div class="detail-field wide"><p class="detail-label">Venue</p><p class="detail-value" id="detailVenue"></p></div>
-        <div class="detail-field wide"><p class="detail-label">About</p><p class="detail-value" id="detailDescription"></p></div>
-        <div class="detail-field wide" id="notesField"><p class="detail-label">Notes</p><p class="detail-value" id="detailNotes"></p><p class="edited-by" id="notesEditedBy" hidden></p></div>
+        <div class="detail-field wide"><p class="detail-label">About</p><p class="detail-value" id="detailDescription"></p><p class="edited-by" id="notesEditedBy" hidden></p></div>
         <div class="detail-field wide" id="photoField"><p class="detail-label">Photo albums</p><div class="photo-list" id="photoList"></div></div>
       </div>
       <div id="originalsPhotoTools" hidden>
@@ -431,10 +430,10 @@
       <div id="clubTools" hidden>
         <hr class="section-rule">
         <form class="tool-block" id="clubNotesForm">
-          <h3>Edit notes</h3>
-          <div class="field"><label for="clubNotes">Public notes</label><textarea id="clubNotes" maxlength="2000"></textarea><small class="field-help">Visible to everyone. Your club name and the time are recorded in the notes log.</small></div>
+          <h3>Edit About</h3>
+          <div class="field"><label for="clubNotes">About this event</label><textarea id="clubNotes" maxlength="3000" required></textarea><small class="field-help">Visible to everyone. Your club name and the time are recorded in the About log.</small></div>
           <p class="inline-status" id="clubNotesStatus" role="status"></p>
-          <div class="dialog-form-actions"><button class="button small" type="submit">Save notes</button></div>
+          <div class="dialog-form-actions"><button class="button small" type="submit">Save About</button></div>
         </form>
         <hr class="section-rule">
         <form class="tool-block" id="suggestionForm">
@@ -467,8 +466,7 @@
           <div class="field"><label for="eventHour">Start time (optional)</label><div class="time-picker"><select id="eventHour" aria-label="Hour"><option value="">--</option></select><select id="eventMinute" aria-label="Minute"></select><select id="eventMeridiem" aria-label="AM or PM"><option value="AM">AM</option><option value="PM">PM</option></select></div><small class="field-help">Leave the hour as “--” to show “Time to be announced”.</small></div>
           <div class="field wide"><label for="eventVenue">Venue</label><input id="eventVenue" type="text" maxlength="140" required></div>
           <div class="field wide"><label for="eventCategory">Category</label><select id="eventCategory" required></select></div>
-          <div class="field wide"><label for="eventDescription">Description</label><textarea id="eventDescription" maxlength="3000" required></textarea></div>
-          <div class="field wide" id="notesInputField" hidden><label for="eventNotes">Public notes</label><textarea id="eventNotes" maxlength="2000"></textarea><small class="field-help">Visible to everyone viewing the calendar.</small></div>
+          <div class="field wide"><label for="eventDescription">About</label><textarea id="eventDescription" maxlength="3000" required></textarea></div>
         </div>
         <div class="dialog-form-actions"><button class="button secondary" type="button" data-close="eventFormDialog">Cancel</button><button class="button" type="submit">Save event</button></div>
       </form>
@@ -555,6 +553,8 @@
       try { const url = new URL(value); return url.protocol === "https:" ? url.href : null; }
       catch { return null; }
     }
+    // Older events kept extra text in a separate "notes" field; it is now shown as part of About.
+    const aboutText = event => [event.desc, event.notes].map(part => (part || "").trim()).filter(Boolean).join("\n\n");
     function formatTime(time) {
       if (!/^\d{2}:\d{2}$/.test(time || "")) return "";
       const [hours, minutes] = time.split(":").map(Number);
@@ -823,8 +823,7 @@
       byId("detailDate").textContent = new Date(`${event.date}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
       byId("detailTime").textContent = timeLabel(event.time, "To be announced");
       byId("detailVenue").textContent = event.venue || "To be announced";
-      byId("detailDescription").textContent = event.desc || "No description provided.";
-      byId("detailNotes").textContent = event.notes || "No additional notes.";
+      byId("detailDescription").textContent = aboutText(event) || "No description provided.";
       const photoList = byId("photoList"); photoList.replaceChildren();
       (Array.isArray(event.photoLinks) ? event.photoLinks : []).forEach(link => {
         const safeUrl = safePhotoUrl(link); if (!safeUrl) return;
@@ -841,14 +840,14 @@
         ? eventIsCompleted(event) ? "This event is complete. Add its photo album links below." : "Photo album links unlock two hours after the scheduled start."
         : "This older event needs a General Secretary to save it once before photo links can be added.";
       const editedBy = byId("notesEditedBy");
-      editedBy.hidden = !event.notesUpdatedBy;
-      editedBy.textContent = event.notesUpdatedBy ? `Last edited by ${event.notesUpdatedBy} · ${formatStamp(event.notesUpdatedAt)}` : "";
+      editedBy.hidden = !event.descUpdatedBy;
+      editedBy.textContent = event.descUpdatedBy ? `Last edited by ${event.descUpdatedBy} · ${formatStamp(event.descUpdatedAt)}` : "";
       const isClub = state.role === "club";
       const switchingEvent = byId("clubTools").dataset.eventId !== event.id;
       byId("clubTools").hidden = !isClub;
       if (isClub && (switchingEvent || !byId("eventDialog").open)) {
         byId("clubTools").dataset.eventId = event.id;
-        byId("clubNotes").value = event.notes || "";
+        byId("clubNotes").value = aboutText(event);
         byId("suggestionForm").reset(); updateSuggestionFields();
         inlineStatus("clubNotesStatus", ""); inlineStatus("suggestionStatus", "");
       }
@@ -862,15 +861,16 @@
       formEvent.preventDefault();
       const event = state.events.find(item => item.id === state.selectedEventId);
       if (state.role !== "club" || !event) return;
-      const notes = byId("clubNotes").value.trim();
-      if (notes === (event.notes || "")) { inlineStatus("clubNotesStatus", "No changes to save."); return; }
+      const desc = byId("clubNotes").value.trim();
+      if (!desc) { inlineStatus("clubNotesStatus", "The About text can't be empty."); return; }
+      if (desc === aboutText(event)) { inlineStatus("clubNotesStatus", "No changes to save."); return; }
       try {
         const batch = writeBatch(state.db);
-        batch.update(doc(state.db, "events", event.id), { notes, notesUpdatedBy: state.roleName, notesUpdatedAt: serverTimestamp() });
-        batch.set(doc(collection(state.db, "noteLogs")), noteLogData(event, event.notes || "", notes));
+        batch.update(doc(state.db, "events", event.id), { desc, notes: "", descUpdatedBy: state.roleName, descUpdatedAt: serverTimestamp() });
+        batch.set(doc(collection(state.db, "noteLogs")), noteLogData(event, aboutText(event), desc));
         await batch.commit();
-        inlineStatus("clubNotesStatus", "Notes saved and logged.", true);
-      } catch (error) { inlineStatus("clubNotesStatus", `Could not save notes: ${error.message}`); }
+        inlineStatus("clubNotesStatus", "About saved and logged.", true);
+      } catch (error) { inlineStatus("clubNotesStatus", `Could not save: ${error.message}`); }
     }
     async function sendSuggestion(formEvent) {
       formEvent.preventDefault();
@@ -917,9 +917,7 @@
       setTimePicker(event?.time || "");
       byId("eventVenue").value = event?.venue || "";
       byId("eventCategory").value = event?.category || "";
-      byId("eventDescription").value = event?.desc || "";
-      byId("eventNotes").value = event?.notes || "";
-      byId("notesInputField").hidden = state.role !== "gensec";
+      byId("eventDescription").value = event ? aboutText(event) : "";
       byId("eventFormDialog").showModal();
     }
     async function saveEvent(formEvent) {
@@ -928,20 +926,20 @@
       const eventData = {
         title: byId("eventTitle").value.trim(), date, time,
         venue: byId("eventVenue").value.trim(), category: byId("eventCategory").value,
-        desc: byId("eventDescription").value.trim(), notes: byId("eventNotes").value.trim(),
+        desc: byId("eventDescription").value.trim(), notes: "",
         eventEnd: eventEndTimestamp(date, time)
       };
       if (!eventData.title || !eventData.venue || !eventData.category || !eventData.desc || !/^\d{4}-\d{2}-\d{2}$/.test(date) || (time && !/^\d{2}:\d{2}$/.test(time))) return;
       try {
         const existing = state.editingEventId ? state.events.find(item => item.id === state.editingEventId) : null;
         const eventRef = existing ? doc(state.db, "events", existing.id) : doc(collection(state.db, "events"));
-        const oldNotes = existing?.notes || "";
-        const notesChanged = eventData.notes !== oldNotes;
-        if (notesChanged) Object.assign(eventData, { notesUpdatedBy: state.roleName, notesUpdatedAt: serverTimestamp() });
+        const oldDesc = existing ? aboutText(existing) : "";
+        const descChanged = eventData.desc !== oldDesc;
+        if (descChanged) Object.assign(eventData, { descUpdatedBy: state.roleName, descUpdatedAt: serverTimestamp() });
         const batch = writeBatch(state.db);
         if (existing) batch.update(eventRef, eventData);
         else batch.set(eventRef, { ...eventData, photoLinks: [] });
-        if (notesChanged) batch.set(doc(collection(state.db, "noteLogs")), noteLogData({ id: eventRef.id, title: eventData.title, date: eventData.date }, oldNotes, eventData.notes));
+        if (descChanged) batch.set(doc(collection(state.db, "noteLogs")), noteLogData({ id: eventRef.id, title: eventData.title, date: eventData.date }, oldDesc, eventData.desc));
         await batch.commit();
         byId("eventFormDialog").close(); setStatus("Event saved.", false);
       } catch (error) { setStatus(`Could not save the event: ${error.message}`); }
@@ -1002,7 +1000,7 @@
     function renderLogs() {
       const list = byId("logList"); list.replaceChildren();
       const items = [...state.logs].sort((a, b) => stampMillis(b.at) - stampMillis(a.at));
-      if (!items.length) { list.append(emptyNote("No notes have been edited yet.")); return; }
+      if (!items.length) { list.append(emptyNote("No About text has been edited yet.")); return; }
       for (const item of items) {
         const card = el("article", "info-card");
         card.append(el("h3", "", item.eventTitle || "Event"), el("p", "info-meta", `Edited by ${item.by} · ${formatStamp(item.at)} · event on ${shortDate(item.eventDate)}`));

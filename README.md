@@ -19,12 +19,12 @@ Each organiser needs an Email/Password user in Firebase Authentication plus a do
 
 | Role document | Who | Can do |
 | --- | --- | --- |
-| `{ role: "gensec", name: "General Secretary" }` | General Secretary | Add, edit and delete events; see suggestions, the notes log and all bills |
+| `{ role: "gensec", name: "General Secretary" }` | General Secretary | Add, edit and delete events; see suggestions, the About log and all bills |
 | `{ role: "originals" }` | Originals Head | Add photo album links after an event |
-| `{ role: "club", name: "Meraki" }` | Club accounts (Meraki, Orion, Panache, Qalam) | Edit the notes of any event and raise suggestions; cannot change dates or other fields |
+| `{ role: "club", name: "Meraki" }` | Club accounts (Meraki, Orion, Panache, Qalam) | Edit the About text (description) of any event and raise suggestions; cannot change dates or other fields |
 | `{ role: "manager", name: "Literary Manager" }` | Council managers | Add bill links (Google Drive PDFs or images) to event folders; see all bills |
 
-The `name` field is shown in the notes log, on suggestions and on bills, and Firestore rules check that every log entry, suggestion and bill is signed with the author's own name.
+The `name` field is shown in the About log, on suggestions and on bills, and Firestore rules check that every log entry, suggestion and bill is signed with the author's own name.
 
 ## Bills
 
